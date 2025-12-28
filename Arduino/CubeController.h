@@ -31,8 +31,9 @@ public:
 
     void openAllSliders();
     void closeAllSliders();
-    void rotateCube(CubeOrientation newOrientation);
-    void executeMove(CubeMove move);
+    int rotateCube(CubeOrientation newOrientation);
+    int executeMove(CubeMove move);
+    int executeMoves(const CubeMove moves[], int count);
     void tick();
 
 private:

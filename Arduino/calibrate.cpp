@@ -55,6 +55,22 @@ void printCalibration()
         Serial.print(", ");
         Serial.print(servos[i].getType() == SLIDER ? "SLIDER" : "SPINNER");
         Serial.print(", ");
+        Serial.print("FACE_");;
+        switch (servos[i].face)
+        {
+        case FACE_R:
+            Serial.print("R, ");
+            break;
+        case FACE_L:
+            Serial.print("L, ");
+            break;
+        case FACE_F:
+            Serial.print("F, ");
+            break;
+        case FACE_B:
+            Serial.print("B, ");
+            break;
+        }
         Serial.print(servos[i].L_us);
         Serial.print(", ");
         Serial.print(servos[i].R_us);

@@ -2,7 +2,7 @@
 #include "Servo.h"
 #include "CubeController.h"
 
-#define CALIBRATE false
+#define CALIBRATE true
 
 void setup() {
 #if CALIBRATE
@@ -28,22 +28,32 @@ void loop() {
 
     if (c == 'f')
     {
-        cubeController.executeMove(MOVE_FP);
+        cubeController.executeMove(MOVE_F);
     }
 
     if (c == 'b')
     {
-        cubeController.executeMove(MOVE_BP);
+        cubeController.executeMove(MOVE_B);
     }
 
     if (c == 'r')
     {
-        cubeController.executeMove(MOVE_RP);
+        cubeController.executeMove(MOVE_R);
     }
 
     if (c == 'l')
     {
-        cubeController.executeMove(MOVE_LP);
+        cubeController.executeMove(MOVE_L);
+    }
+
+    if (c == 'u')
+    {
+        cubeController.executeMove(MOVE_U);
+    }
+
+    if (c == 'd')
+    {
+        cubeController.executeMove(MOVE_D);
     }
 
     if (c == 't')
