@@ -32,7 +32,7 @@ public:
     void openAllSliders();
     void closeAllSliders();
     int rotateCube(CubeOrientation newOrientation);
-    int executeMove(CubeMove move);
+    int executeMove(CubeMove move, unsigned long delayOffset = 0);
     int executeMoves(const CubeMove moves[], int count);
     void tick();
 
