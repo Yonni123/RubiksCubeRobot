@@ -1,6 +1,6 @@
 #include "Arduino.h"
 #include "CubeController.h"
-#define SERVO_MOVE_DELAY 200  // milliseconds between servo moves
+#define SERVO_MOVE_DELAY 210  // milliseconds between servo moves
 
 CubeOrientation currentOrientation = ORIENT_NORMAL;
 
@@ -104,6 +104,8 @@ int CubeController::rotateCube(CubeOrientation newOrientation)
 
     enqueueMove({spinnerFIndex, STATE_C, now + SERVO_MOVE_DELAY * 4});  // Center front and back again
     enqueueMove({spinnerBIndex, STATE_C, now + SERVO_MOVE_DELAY * 4});
+    enqueueMove({spinnerFIndex, STATE_C, now + SERVO_MOVE_DELAY * 4});  // Center twice to go to absolute center
+    enqueueMove({spinnerBIndex, STATE_C, now + SERVO_MOVE_DELAY * 4});
 
     enqueueMove({sliderFIndex, STATE_C, now + SERVO_MOVE_DELAY * 5});   // Close front and back side sliders
     enqueueMove({sliderBIndex, STATE_C, now + SERVO_MOVE_DELAY * 5});
@@ -120,6 +122,7 @@ int CubeController::executeMove(CubeMove move)
     // If cube is inverted, left and right moves become up and down moves.
     unsigned long now = millis();
     int del = 0;
+    ServoState targetState; 
     int spinnerIndex;
     int sliderIndex;
     switch (move)
@@ -127,18 +130,12 @@ int CubeController::executeMove(CubeMove move)
     case MOVE_F:
         spinnerIndex = FACE_F * 2 + 1;
         sliderIndex  = FACE_F * 2;
-        enqueueMove({spinnerIndex, STATE_R, now});
-        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
-        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
-        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
+        targetState = STATE_R;
         break;
     case MOVE_B:
         spinnerIndex = FACE_B * 2 + 1;
         sliderIndex  = FACE_B * 2;
-        enqueueMove({spinnerIndex, STATE_R, now});
-        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
-        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
-        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
+        targetState = STATE_R;
         break;
     case MOVE_R:
         if (currentOrientation == ORIENT_INVERT)
@@ -148,10 +145,7 @@ int CubeController::executeMove(CubeMove move)
         now += del;
         spinnerIndex = FACE_R * 2 + 1;
         sliderIndex  = FACE_R * 2;
-        enqueueMove({spinnerIndex, STATE_R, now});
-        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
-        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
-        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
+        targetState = STATE_R;
         break;
     case MOVE_L:
         if (currentOrientation == ORIENT_INVERT)
@@ -161,10 +155,7 @@ int CubeController::executeMove(CubeMove move)
         now += del;
         spinnerIndex = FACE_L * 2 + 1;
         sliderIndex  = FACE_L * 2;
-        enqueueMove({spinnerIndex, STATE_R, now});
-        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
-        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
-        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
+        targetState = STATE_R;
         break;
     case MOVE_U:
         if (currentOrientation == ORIENT_NORMAL)
@@ -174,10 +165,7 @@ int CubeController::executeMove(CubeMove move)
         now += del;
         spinnerIndex = FACE_R * 2 + 1;
         sliderIndex  = FACE_R * 2;
-        enqueueMove({spinnerIndex, STATE_R, now});
-        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
-        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
-        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
+        targetState = STATE_R;
         break;
     case MOVE_D:
         if (currentOrientation == ORIENT_NORMAL)
@@ -187,26 +175,17 @@ int CubeController::executeMove(CubeMove move)
         now += del;
         spinnerIndex = FACE_L * 2 + 1;
         sliderIndex  = FACE_L * 2;
-        enqueueMove({spinnerIndex, STATE_R, now});
-        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
-        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
-        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
+        targetState = STATE_R;
         break;
     case MOVE_FP:
         spinnerIndex = FACE_F * 2 + 1;
         sliderIndex  = FACE_F * 2;
-        enqueueMove({spinnerIndex, STATE_L, now});
-        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
-        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
-        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
+        targetState = STATE_L;
         break;
     case MOVE_BP:
         spinnerIndex = FACE_B * 2 + 1;
         sliderIndex  = FACE_B * 2;
-        enqueueMove({spinnerIndex, STATE_L, now});
-        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
-        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
-        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
+        targetState = STATE_L;
         break;
     case MOVE_RP:
         if (currentOrientation == ORIENT_INVERT)
@@ -216,10 +195,7 @@ int CubeController::executeMove(CubeMove move)
         now += del;
         spinnerIndex = FACE_R * 2 + 1;
         sliderIndex  = FACE_R * 2;
-        enqueueMove({spinnerIndex, STATE_L, now});
-        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
-        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
-        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
+        targetState = STATE_L;
         break;
     case MOVE_LP:
         if (currentOrientation == ORIENT_INVERT)
@@ -229,10 +205,7 @@ int CubeController::executeMove(CubeMove move)
         now += del;
         spinnerIndex = FACE_L * 2 + 1;
         sliderIndex  = FACE_L * 2;
-        enqueueMove({spinnerIndex, STATE_L, now});
-        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
-        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
-        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
+        targetState = STATE_L;
         break;
     case MOVE_UP:
         if (currentOrientation == ORIENT_NORMAL)
@@ -242,10 +215,7 @@ int CubeController::executeMove(CubeMove move)
         now += del;
         spinnerIndex = FACE_R * 2 + 1;
         sliderIndex  = FACE_R * 2;
-        enqueueMove({spinnerIndex, STATE_L, now});
-        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
-        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
-        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
+        targetState = STATE_L;
         break;
     case MOVE_DP:
         if (currentOrientation == ORIENT_NORMAL)
@@ -255,15 +225,18 @@ int CubeController::executeMove(CubeMove move)
         now += del;
         spinnerIndex = FACE_L * 2 + 1;
         sliderIndex  = FACE_L * 2;
-        enqueueMove({spinnerIndex, STATE_L, now});
-        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
-        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
-        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
+        targetState = STATE_L;
         break;
     default:
-        // Other moves not implemented yet
+        return 0; // Invalid move
         break;
     }
+
+    enqueueMove({spinnerIndex, targetState, now});  // Spin into target state
+    enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});    // Release slider to allow rotation
+    enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});   // Center spinner after rotation
+    enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});   // Center again to ensure absolute center
+    enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});    // Close slider to grip again
 
     return SERVO_MOVE_DELAY * 4 + del; // Total time taken for the move
 }

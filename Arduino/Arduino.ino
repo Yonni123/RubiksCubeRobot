@@ -2,7 +2,7 @@
 #include "Servo.h"
 #include "CubeController.h"
 
-#define CALIBRATE true
+#define CALIBRATE false
 
 void setup() {
 #if CALIBRATE

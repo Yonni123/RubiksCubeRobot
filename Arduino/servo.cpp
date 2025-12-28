@@ -7,7 +7,7 @@ Servo servos[NUM_SERVOS] = {    // If below values are wrong, use calibrate.cpp 
     Servo(6, SLIDER, FACE_R, 2350, 1250, 2290, 0),
     Servo(7, SPINNER, FACE_R, 520, 2550, 1550, 45),
     Servo(4, SLIDER, FACE_L, 750, 2150, 1000, 0),
-    Servo(5, SPINNER, FACE_L, 500, 2500, 1500, 80),
+    Servo(5, SPINNER, FACE_L, 550, 2540, 1550, 80),
     Servo(8, SLIDER, FACE_F, 500, 1700, 750, 0),
     Servo(9, SPINNER, FACE_F, 400, 2410, 1400, 55),
     Servo(2, SLIDER, FACE_B, 400, 1800, 570, 0),
