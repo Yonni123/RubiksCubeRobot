@@ -83,8 +83,6 @@ public:
             break;
         }
         state = next;
-        Serial.print("Sending pulse to servo on pin ");
-        Serial.print(pin);
         sendPulse();
     }
 

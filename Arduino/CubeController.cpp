@@ -1,7 +1,10 @@
 #include "Arduino.h"
 #include "CubeController.h"
+#define SERVO_MOVE_DELAY 200  // milliseconds between servo moves
 
-#define MAX_QUEUE_SIZE 32
+CubeOrientation currentOrientation = ORIENT_NORMAL;
+
+#define MAX_QUEUE_SIZE 48
 struct ScheduledMove {
     int servoIndex;
     ServoState targetState;
@@ -37,6 +40,77 @@ void dequeueMove()
     queueHead = (queueHead + 1) % MAX_QUEUE_SIZE;
 }
 
+void CubeController::openAllSliders()
+{
+    int now = millis();
+    for (int i = 0; i < numServos; i++)
+    {
+        if (servos[i].getType() == SLIDER)
+        {
+            enqueueMove({i, STATE_R, now});
+        }
+    }
+}
+
+void CubeController::closeAllSliders()
+{
+    int now = millis();
+    for (int i = 0; i < numServos; i++)
+    {
+        if (servos[i].getType() == SLIDER)
+        {
+            enqueueMove({i, STATE_C, now});
+        }
+    }
+}
+
+void CubeController::rotateCube(CubeOrientation newOrientation)
+{
+    if (newOrientation == currentOrientation)
+        return; // No change
+
+    int spinnerFIndex = FACE_F * 2 + 1;
+    int sliderFIndex  = FACE_F * 2;
+    int spinnerBIndex = FACE_B * 2 + 1;
+    int sliderBIndex  = FACE_B * 2;
+    int spinnerRIndex = FACE_R * 2 + 1;
+    int sliderRIndex  = FACE_R * 2;
+    int spinnerLIndex = FACE_L * 2 + 1;
+    int sliderLIndex  = FACE_L * 2;
+
+    int now = millis();
+    enqueueMove({sliderFIndex, STATE_L, now});  // Grip the front and back side
+    enqueueMove({sliderBIndex, STATE_L, now});
+
+    enqueueMove({sliderRIndex, STATE_R, now});  // Release the right and left side
+    enqueueMove({sliderLIndex, STATE_R, now});
+
+    if (newOrientation == ORIENT_INVERT)
+    {
+        enqueueMove({spinnerFIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});  // Rotate front and back to make the entire cube turn
+        enqueueMove({spinnerBIndex, STATE_L, now + SERVO_MOVE_DELAY* 1});
+    }
+    else if (newOrientation == ORIENT_NORMAL)
+    {
+        enqueueMove({spinnerFIndex, STATE_L, now + SERVO_MOVE_DELAY * 1});  // Rotate front and back to make the entire cube turn
+        enqueueMove({spinnerBIndex, STATE_R, now + SERVO_MOVE_DELAY* 1});
+    }
+
+    enqueueMove({sliderRIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});   // Close right and left side sliders
+    enqueueMove({sliderLIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
+
+    enqueueMove({sliderFIndex, STATE_R, now + SERVO_MOVE_DELAY * 3});   // Release front and back side sliders
+    enqueueMove({sliderBIndex, STATE_R, now + SERVO_MOVE_DELAY * 3});
+
+    enqueueMove({spinnerFIndex, STATE_C, now + SERVO_MOVE_DELAY * 4});  // Center front and back again
+    enqueueMove({spinnerBIndex, STATE_C, now + SERVO_MOVE_DELAY * 4});
+
+    enqueueMove({sliderFIndex, STATE_C, now + SERVO_MOVE_DELAY * 5});   // Close front and back side sliders
+    enqueueMove({sliderBIndex, STATE_C, now + SERVO_MOVE_DELAY * 5});
+
+    currentOrientation = newOrientation;
+}
+
 void CubeController::executeMove(CubeMove move)
 {
     unsigned long now = millis();
@@ -48,65 +122,65 @@ void CubeController::executeMove(CubeMove move)
         spinnerIndex = FACE_F * 2 + 1;
         sliderIndex  = FACE_F * 2;
         enqueueMove({spinnerIndex, STATE_R, now});
-        enqueueMove({sliderIndex, STATE_R, now + 200});
-        enqueueMove({spinnerIndex, STATE_C, now + 400});
-        enqueueMove({sliderIndex, STATE_C, now + 600});
+        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
+        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
+        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
         break;
     case MOVE_B:
         spinnerIndex = FACE_B * 2 + 1;
         sliderIndex  = FACE_B * 2;
         enqueueMove({spinnerIndex, STATE_R, now});
-        enqueueMove({sliderIndex, STATE_R, now + 200});
-        enqueueMove({spinnerIndex, STATE_C, now + 400});
-        enqueueMove({sliderIndex, STATE_C, now + 600});
+        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
+        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
+        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
         break;
     case MOVE_R:
         spinnerIndex = FACE_R * 2 + 1;
         sliderIndex  = FACE_R * 2;
         enqueueMove({spinnerIndex, STATE_R, now});
-        enqueueMove({sliderIndex, STATE_R, now + 200});
-        enqueueMove({spinnerIndex, STATE_C, now + 400});
-        enqueueMove({sliderIndex, STATE_C, now + 600});
+        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
+        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
+        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
         break;
     case MOVE_L:
         spinnerIndex = FACE_L * 2 + 1;
         sliderIndex  = FACE_L * 2;
         enqueueMove({spinnerIndex, STATE_R, now});
-        enqueueMove({sliderIndex, STATE_R, now + 200});
-        enqueueMove({spinnerIndex, STATE_C, now + 400});
-        enqueueMove({sliderIndex, STATE_C, now + 600});
+        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
+        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
+        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
         break;
     case MOVE_FP:
         spinnerIndex = FACE_F * 2 + 1;
         sliderIndex  = FACE_F * 2;
         enqueueMove({spinnerIndex, STATE_L, now});
-        enqueueMove({sliderIndex, STATE_R, now + 200});
-        enqueueMove({spinnerIndex, STATE_C, now + 400});
-        enqueueMove({sliderIndex, STATE_C, now + 600});
+        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
+        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
+        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
         break;
     case MOVE_BP:
         spinnerIndex = FACE_B * 2 + 1;
         sliderIndex  = FACE_B * 2;
         enqueueMove({spinnerIndex, STATE_L, now});
-        enqueueMove({sliderIndex, STATE_R, now + 200});
-        enqueueMove({spinnerIndex, STATE_C, now + 400});
-        enqueueMove({sliderIndex, STATE_C, now + 600});
+        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
+        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
+        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
         break;
     case MOVE_RP:
         spinnerIndex = FACE_R * 2 + 1;
         sliderIndex  = FACE_R * 2;
         enqueueMove({spinnerIndex, STATE_L, now});
-        enqueueMove({sliderIndex, STATE_R, now + 200});
-        enqueueMove({spinnerIndex, STATE_C, now + 400});
-        enqueueMove({sliderIndex, STATE_C, now + 600});
+        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
+        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
+        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
         break;
     case MOVE_LP:
         spinnerIndex = FACE_L * 2 + 1;
         sliderIndex  = FACE_L * 2;
         enqueueMove({spinnerIndex, STATE_L, now});
-        enqueueMove({sliderIndex, STATE_R, now + 200});
-        enqueueMove({spinnerIndex, STATE_C, now + 400});
-        enqueueMove({sliderIndex, STATE_C, now + 600});
+        enqueueMove({sliderIndex, STATE_R, now + SERVO_MOVE_DELAY * 1});
+        enqueueMove({spinnerIndex, STATE_C, now + SERVO_MOVE_DELAY * 2});
+        enqueueMove({sliderIndex, STATE_C, now + SERVO_MOVE_DELAY * 3});
         break;
     default:
         // Other moves not implemented yet

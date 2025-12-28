@@ -18,11 +18,8 @@ enum CubeMove {
 
 enum CubeOrientation {
     ORIENT_NORMAL,   // Original orientation
-    ORIENT_UP_FRONT,    // Original UP face is now in the FRONT servo
-    ORIENT_UP_RIGHT,    // Original UP face is now in the RIGHT servo
-    ORIENT_UP_BACK,     // Original UP face is now in the BACK servo
-    ORIENT_UP_LEFT      // Original UP face is now in the LEFT servo
-    // Please do not make UP face DOWN, it is not necessary and only complicates things
+    ORIENT_INVERT,    // Original UP face is now in the FRONT servo
+    // More orientations can be added, but they would make things complicated
 };
 
 class CubeController {
@@ -32,6 +29,9 @@ public:
         // Empty body
     }
 
+    void openAllSliders();
+    void closeAllSliders();
+    void rotateCube(CubeOrientation newOrientation);
     void executeMove(CubeMove move);
     void tick();
 
