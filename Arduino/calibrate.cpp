@@ -1,6 +1,6 @@
 #include <Arduino.h>
-#include "servo.h"
-#include "calibrate.h"
+#include "Servo.h"
+#include "Calibrate.h"
 
 // Select one servo and calibrate one at a time
 static int selectedServo = 0;

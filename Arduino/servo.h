@@ -1,4 +1,5 @@
 #pragma once
+#include <Arduino.h>
 
 const int NUM_SERVOS = 8;
 
@@ -13,6 +14,15 @@ enum ServoType
 {
     SPINNER,
     SLIDER
+};
+
+enum CubeFace {
+    FACE_R,
+    FACE_L,
+    FACE_F,
+    FACE_B,
+    FACE_U,
+    FACE_D
 };
 
 class Servo
@@ -30,10 +40,13 @@ public:
     int C_us{};
     int CD_us{};    // Deviation, plus minus..
 
+    const CubeFace face; // Associated cube face
+
     // Constructor
-    Servo(int pin, ServoType type, int L_us, int R_us, int C_us, int CD_us = 0) :
+    Servo(int pin, ServoType type, CubeFace face, int L_us, int R_us, int C_us, int CD_us = 0) :
         pin(pin),
         type(type),
+        face(face), // U and D faces aren't possible in my mechanical design (whole cube must rotate)
         state(STATE_C),     // default starting state
         pulse(C_us),        // initial PWM
         L_us(L_us),
@@ -70,6 +83,9 @@ public:
             break;
         }
         state = next;
+        Serial.print("Sending pulse to servo on pin ");
+        Serial.print(pin);
+        sendPulse();
     }
 
     int pulseWidth() const
