@@ -1,6 +1,7 @@
 #include "Calibrate.h"
 #include "Servo.h"
 #include "CubeController.h"
+#include "SequenceManager.h"
 
 #define CALIBRATE false
 
@@ -17,7 +18,7 @@ void loop() {
 #if CALIBRATE
     calibrateLoop();
 #else
-    cubeController.tick();
+    seqManager.tick();
     if (!Serial.available())
         return;
 
@@ -74,6 +75,11 @@ void loop() {
     if (c == 'c')
     {
         cubeController.closeAllSliders();
+    }
+
+    if (c == 'y')
+    {
+        seqManager.startSequence("RBRFF'RLF");
     }
 
 #endif
