@@ -1,16 +1,10 @@
 #include "Calibrate.h"
-#include "Servo.h"
 #include "CubeController.h"
 #include "SequenceManager.h"
 
-#define CALIBRATE false
-
 void setup() {
-#if CALIBRATE
-  calibrateSetup();
-#else
-  Serial.begin(9600);
-#endif
+    Serial.begin(9600);
+    calibrateSetup();   // Initialize EEPROM where calibrations are stored
 }
 
 void loop() {
@@ -79,7 +73,7 @@ void loop() {
 
     if (c == 'y')
     {
-        seqManager.startSequence("RBRFF'RLF");
+        seqManager.startSequence("LUB'U'RL'BR'FB'DRD'F'");
     }
 
 #endif

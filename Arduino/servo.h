@@ -1,60 +1,29 @@
 #pragma once
 #include <Arduino.h>
+#include "Config.h"
+#include "Types.h"
 
-const int NUM_SERVOS = 8;
-
-enum ServoState
-{
-    STATE_C,
-    STATE_L,
-    STATE_R
-};
-
-enum ServoType
-{
-    SPINNER,
-    SLIDER
-};
-
-enum CubeFace {
-    FACE_R,
-    FACE_L,
-    FACE_F,
-    FACE_B,
-    FACE_U,
-    FACE_D
-};
+// ToString for servo types
+void servoTypeToString(ServoType type, char* buffer, size_t bufferSize);
 
 class Servo
 {
 private:
     int pin{};
     ServoType type{};
-    ServoState state{};
-    int pulse{};
+    ServoCal cal{};
+    ServoState state{STATE_C};
+    int pulse{};    // Current pulse width in microseconds
 
 public:
-    // PWM calibration (microseconds)
-    int L_us{};
-    int R_us{};
-    int C_us{};
-    int CD_us{};    // Deviation, plus minus..
-
-    const CubeFace face; // Associated cube face
 
     // Constructor
-    Servo(int pin, ServoType type, CubeFace face, int L_us, int R_us, int C_us, int CD_us = 0) :
+    Servo(int pin, ServoType type, ServoCal calibration) :
         pin(pin),
         type(type),
-        face(face), // U and D faces aren't possible in my mechanical design (whole cube must rotate)
-        state(STATE_C),     // default starting state
-        pulse(C_us),        // initial PWM
-        L_us(L_us),
-        R_us(R_us),
-        C_us(C_us),
-        CD_us(CD_us)
+        cal(calibration)
     {
-        // Empty body
+        pulse = calibration.C_us;   // Start at center position
     }
 
     // State control
@@ -63,22 +32,22 @@ public:
         switch (next)
         {
         case STATE_L:
-            pulse = L_us; break;
+            pulse = cal.L_us; break;
         case STATE_R:
-            pulse = R_us; break;
+            pulse = cal.R_us; break;
         case STATE_C:
-            if (type == SLIDER)
+            if (type % 2 == 0) // Slider
             {
-                pulse = C_us;
+                pulse = cal.C_us;
                 break;
             }  
 
             if (state == STATE_L)
-                pulse = C_us + CD_us;
+                pulse = cal.C_us + cal.CD_us;
             else if (state == STATE_R)
-                pulse = C_us - CD_us;
+                pulse = cal.C_us - cal.CD_us;
             else
-                pulse = C_us;
+                pulse = cal.C_us;
 
             break;
         }
@@ -96,36 +65,41 @@ public:
         return pin;
     }
 
-    int getType() const
+    ServoType getType() const
     {
         return type;
+    }
+
+    ServoCal getCalibration() const
+    {
+        return cal;
     }
 
     void adjustCalibration(int delta)
     {
         if (state == STATE_C)
         {
-            C_us += delta;
+            cal.C_us += delta;
         }
         else if (state == STATE_L)
         {
-            L_us += delta;
+            cal.L_us += delta;
         }
         else if (state == STATE_R)
         {
-            R_us += delta;
+            cal.R_us += delta;
         }
         pulse += delta;
     }
 
     void adjustDeviation(int delta)
     {
-        if (type == SPINNER)
+        if (type % 2 == 1) // Spinner
         {
-            CD_us += delta;
+            cal.CD_us += delta;
             if (state == STATE_C)
             {
-                pulse = C_us + (pulse > -C_us ? CD_us : CD_us);
+                pulse = cal.C_us + ((state == STATE_L) ? cal.CD_us : -cal.CD_us);
             }
         }
     }
@@ -137,6 +111,18 @@ public:
         digitalWrite(pin, LOW);
     }
 };
+
+#define NUM_SERVOS 8
+// If you change these, it will read wrong calibration values
+// Just don't change them
+#define RIGHT_SPINNER_INDEX 0
+#define RIGHT_SLIDER_INDEX 1
+#define LEFT_SPINNER_INDEX 2
+#define LEFT_SLIDER_INDEX 3
+#define FRONT_SPINNER_INDEX 4
+#define FRONT_SLIDER_INDEX 5
+#define BACK_SPINNER_INDEX 6
+#define BACK_SLIDER_INDEX 7
 
 extern Servo servos[NUM_SERVOS];
 

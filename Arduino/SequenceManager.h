@@ -1,6 +1,7 @@
 #pragma once
 #include "Arduino.h"
 #include "CubeController.h"
+#include "Config.h"
 
 class CubeSequenceManager
 {
