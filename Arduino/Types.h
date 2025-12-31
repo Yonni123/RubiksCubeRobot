@@ -8,15 +8,15 @@ enum ServoState
 };
 
 enum ServoType
-{   // If a servo type is odd, it's a spinner; if even, it's a slider
-    FRONT_SLIDER,
-    FRONT_SPINNER,
-    RIGHT_SLIDER,
+{   // If a servo type is odd, it's a slider; if even, it's a spinner
     RIGHT_SPINNER,
-    BACK_SLIDER,
-    BACK_SPINNER,
+    RIGHT_SLIDER,
+    LEFT_SPINNER,
     LEFT_SLIDER,
-    LEFT_SPINNER
+    FRONT_SPINNER,
+    FRONT_SLIDER,
+    BACK_SPINNER,
+    BACK_SLIDER
 };
 
 struct ServoCal {

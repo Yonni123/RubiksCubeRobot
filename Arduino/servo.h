@@ -36,7 +36,7 @@ public:
         case STATE_R:
             pulse = cal.R_us; break;
         case STATE_C:
-            if (type % 2 == 0) // Slider
+            if (type % 2 == 1) // Slider
             {
                 pulse = cal.C_us;
                 break;
@@ -94,7 +94,7 @@ public:
 
     void adjustDeviation(int delta)
     {
-        if (type % 2 == 1) // Spinner
+        if (type % 2 == 0) // Spinner
         {
             cal.CD_us += delta;
             if (state == STATE_C)
@@ -113,16 +113,6 @@ public:
 };
 
 #define NUM_SERVOS 8
-// If you change these, it will read wrong calibration values
-// Just don't change them
-#define RIGHT_SPINNER_INDEX 0
-#define RIGHT_SLIDER_INDEX 1
-#define LEFT_SPINNER_INDEX 2
-#define LEFT_SLIDER_INDEX 3
-#define FRONT_SPINNER_INDEX 4
-#define FRONT_SLIDER_INDEX 5
-#define BACK_SPINNER_INDEX 6
-#define BACK_SLIDER_INDEX 7
 
 extern Servo servos[NUM_SERVOS];
 
