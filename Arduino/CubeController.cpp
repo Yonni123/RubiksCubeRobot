@@ -1,6 +1,5 @@
 #include "Arduino.h"
 #include "CubeController.h"
-#define SERVO_MOVE_DELAY 210  // milliseconds between servo moves
 
 CubeOrientation currentOrientation = ORIENT_NORMAL;
 
