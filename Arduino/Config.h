@@ -14,6 +14,3 @@
 // After running in calibration mode, open serial monitor and type "h" for help
 // It will let you control individual servos to calibrate them perfectly
 #define CALIBRATE false
-
-// When each servo is commanded, this is how long we wait for it to be in its expected pos
-#define SERVO_MOVE_DELAY 200                  // milliseconds between servo moves: 120 - 250

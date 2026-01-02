@@ -1,102 +1,147 @@
 #include "SequenceManager.h"
+#include "Servo.h"
+#include <ctype.h> 
+#include <stdlib.h>
+#include <Arduino.h>
 
-CubeSequenceManager seqManager(cubeController);
+SequenceManager seqManager;
 
-// Helper to parse single move
-static bool parseSingleMove(char face, char modifier, CubeMove& outMove)
+// Convert character to ServoState
+static bool parseServoState(char c, ServoState& state)
 {
-    switch (face)
+    switch (c)
     {
-    case 'U': outMove = MOVE_U; break;
-    case 'D': outMove = MOVE_D; break;
-    case 'L': outMove = MOVE_L; break;
-    case 'R': outMove = MOVE_R; break;
-    case 'F': outMove = MOVE_F; break;
-    case 'B': outMove = MOVE_B; break;
-    default: return false;
+        case 'L': state = STATE_L; return true;
+        case 'C': state = STATE_C; return true;
+        case 'R': state = STATE_R; return true;
+        default: return false;
     }
-
-    if (modifier == '\'')
-    {
-        switch (outMove)
-        {
-        case MOVE_U: outMove = MOVE_UP; break;
-        case MOVE_D: outMove = MOVE_DP; break;
-        case MOVE_L: outMove = MOVE_LP; break;
-        case MOVE_R: outMove = MOVE_RP; break;
-        case MOVE_F: outMove = MOVE_FP; break;
-        case MOVE_B: outMove = MOVE_BP; break;
-        }
-    }
-
-    return true;
 }
 
-// ------------------------------
-
-CubeSequenceManager::CubeSequenceManager(CubeController& controller)
-    : cube(controller) {}
-
-// Start a new sequence (interrupts any current one)
-void CubeSequenceManager::startSequence(const char* moveString)
+// Start a new sequence
+// Returns:
+//  0  = OK
+// -1  = busy
+// -2  = format error
+int SequenceManager::startSequence(const char* moveString)
 {
-    activeSequence = moveString;
+    if (!moveString || *moveString == '\0')
+        return -2;
+
+    // Cancel command
+    if (moveString[0] == 'C' && moveString[1] == '\0')
+    {
+        busy = false;
+        activeSequence[0] = '\0';
+        return 0;
+    }
+
+    if (busy)
+        return -1;
+
+    strncpy(activeSequence, moveString, sizeof(activeSequence) - 1);
+    activeSequence[sizeof(activeSequence) - 1] = '\0';
+
     sequenceIndex = 0;
     nextMoveAt = millis();
-    sequenceActive = true;
+    busy = true;
+
+    return 0;
 }
 
-// Called repeatedly in loop()
-void CubeSequenceManager::tick()
+struct MoveToExecute
 {
-    cube.tick();
-    if (!sequenceActive)
-        return;
+    int servoNum;
+    ServoState state;
+    bool alreadyExecuted = false;
+};
+MoveToExecute pendingMove;
+
+// Called repeatedly from loop()
+int SequenceManager::tick()
+{
+    if (!busy)
+        return 0;
 
     unsigned long now = millis();
     if (now < nextMoveAt)
-        return;
+        return 0;
 
-    scheduleNextMove();
+    if (!pendingMove.alreadyExecuted)
+    {
+        servos[pendingMove.servoNum].setState(pendingMove.state);
+        pendingMove.alreadyExecuted = true;
+    }
+
+    return scheduleNextMove();
 }
 
-// Schedule the next move from the string
-void CubeSequenceManager::scheduleNextMove()
+// Parse and schedule the next move
+int SequenceManager::scheduleNextMove()
 {
-    char c = activeSequence[sequenceIndex];
-    if (c == '\0')
+    if (!activeSequence)
     {
-        sequenceActive = false; // Finished
-        return;
+        busy = false;
+        return 0;
     }
 
-    char modifier = '\0';
-    // Look ahead for ' or 2
-    if (activeSequence[sequenceIndex + 1] == '\'' ||
-        activeSequence[sequenceIndex + 1] == '2')
-    {
-        modifier = activeSequence[sequenceIndex + 1];
+    // Skip spaces and separators
+    while (activeSequence[sequenceIndex] == ' ' || activeSequence[sequenceIndex] == '_')
         sequenceIndex++;
+
+    // End of sequence
+    if (activeSequence[sequenceIndex] == '\0')
+    {
+        busy = false;
+        activeSequence[0] = '\0';
+        return 0;
     }
 
-    CubeMove move;
-    if (!parseSingleMove(c, modifier == '\'' ? '\'' : '\0', move))
+    // ---- Parse servo number ----
+    char* endPtr;
+    unsigned long servoNum =
+        strtoul(&activeSequence[sequenceIndex], &endPtr, 10);
+
+    if (endPtr == &activeSequence[sequenceIndex] ||
+        servoNum >= NUM_SERVOS)
     {
-        sequenceActive = false; // invalid move
-        return;
+        busy = false;
+        activeSequence[0] = '\0';
+        return -3;  // servo error
     }
 
-    unsigned long delayOffset = 0;
-    if (modifier == '2')
-    {
-        delayOffset += cube.executeMove(move);
-        delayOffset += cube.executeMove(move, delayOffset);
-    }
-    else
-    {
-        delayOffset += cube.executeMove(move);
-    }
+    sequenceIndex = endPtr - activeSequence;
 
+    // ---- Parse servo state ----
+    ServoState state;
+    if (!parseServoState(activeSequence[sequenceIndex], state))
+    {
+        busy = false;
+        activeSequence[0] = '\0';
+        return -4;  // state error
+    }
     sequenceIndex++;
-    nextMoveAt = millis() + delayOffset;
+
+    // ---- Parse delay ----
+    if (!isdigit(activeSequence[sequenceIndex]))
+    {
+        busy = false;
+        activeSequence[0] = '\0';
+        return -5;  // delay error
+    }
+
+    unsigned long delayMs =
+        strtoul(&activeSequence[sequenceIndex], &endPtr, 10);
+
+    sequenceIndex = endPtr - activeSequence;
+
+    // ---- Make the move pending ----
+    pendingMove.servoNum = servoNum;
+    pendingMove.state = state;
+    pendingMove.alreadyExecuted = false;
+
+    // ---- Schedule next move ----
+    nextMoveAt = millis() + delayMs;
+
+    return 0;
 }

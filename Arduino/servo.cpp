@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include "Servo.h"
-#include "CubeController.h"
 #include "Config.h"
 #include "Calibrate.h"
 
@@ -18,11 +17,11 @@ Servo servos[NUM_SERVOS] =
 };
 
 // Call this function in the main loop to send PWM signals to all servos to keep them in position
-void sendPWMAll(Servo servos[], int numServos)
+void sendPWMAll()
 {
     unsigned long frameStart = micros();
 
-    for (int i = 0; i < numServos; i++)
+    for (int i = 0; i < NUM_SERVOS; i++)
     {
         servos[i].sendPulse();
     }

@@ -52,7 +52,11 @@ public:
             break;
         }
         state = next;
-        sendPulse();
+    }
+
+    ServoState getState() const
+    {
+        return state;
     }
 
     int pulseWidth() const
@@ -116,4 +120,4 @@ public:
 
 extern Servo servos[NUM_SERVOS];
 
-void sendPWMAll(Servo servos[], int numServos);
+void sendPWMAll();
