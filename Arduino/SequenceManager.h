@@ -30,7 +30,7 @@ public:
     bool isBusy() const { return busy; }
 
 private:
-    char activeSequence[64];
+    char activeSequence[512];
     int sequenceIndex = 0;
     unsigned long nextMoveAt = 0;
     bool busy = false;
