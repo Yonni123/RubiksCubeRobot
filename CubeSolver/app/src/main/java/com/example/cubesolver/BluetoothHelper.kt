@@ -30,29 +30,25 @@ class BluetoothHelper {
     fun connect(
         device: BluetoothDevice,
         onConnected: () -> Unit = {},
-        onFailed: (Exception) -> Unit = {}
+        onFailed: (Exception) -> Unit = {},
+        onRobotStateChange: (String) -> Unit = {}
     ) {
-        // Close old socket if still exists
-        if (socket != null) {
-            disconnect()
-        }
+        if (socket != null) disconnect()
 
         job = CoroutineScope(Dispatchers.IO).launch {
             try {
                 socket = device.createRfcommSocketToServiceRecord(HC06_UUID)
                 socket?.connect()
                 isConnected = true
-                startReading() // start reading incoming messages
-                withContext(Dispatchers.Main) {
-                    onConnected() // call the callback when connection succeeds
-                }
+
+                // Start reading in a coroutine
+                startReading(onRobotStateChange) // <-- make sure startReading is suspend
+
+                withContext(Dispatchers.Main) { onConnected() }
             } catch (e: IOException) {
-                Log.e(TAG, "Bluetooth connection failed", e)
                 isConnected = false
                 try { socket?.close() } catch (_: Exception) {}
-                withContext(Dispatchers.Main) {
-                    onFailed(e)
-                }
+                withContext(Dispatchers.Main) { onFailed(e) }
             }
         }
     }
@@ -94,23 +90,31 @@ class BluetoothHelper {
     }
 
     // --- Start reading incoming messages ---
-    private fun startReading() {
+    fun startReading(onRobotState: (String) -> Unit) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val input = socket?.inputStream ?: return@launch
-                val buffer = ByteArray(1024)
-                var bytes: Int
+                val reader = input.bufferedReader()
+
                 while (isConnected && socket?.isConnected == true) {
-                    bytes = input.read(buffer)
-                    if (bytes > 0) {
-                        val message = String(buffer, 0, bytes)
-                        withContext(Dispatchers.Main) {
-                            lastMessage = message // Compose UI reacts automatically
+                    val line = reader.readLine() ?: break
+                    val msg = line.trim()
+                    when (msg) {
+                        "IDLE", "BUSY" -> {
+                            withContext(Dispatchers.Main) {
+                                onRobotState(msg) // update Compose state on main thread
+                            }
+                        }
+                        else -> {
+                            Log.d("BluetoothHelper", "Robot says: $msg")
                         }
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+                withContext(Dispatchers.Main) {
+                    isConnected = false
+                }
             }
         }
     }

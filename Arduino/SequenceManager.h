@@ -36,6 +36,7 @@ private:
     bool busy = false;
 
     int scheduleNextMove();
+    void notifyState();
 };
 
 extern SequenceManager seqManager;

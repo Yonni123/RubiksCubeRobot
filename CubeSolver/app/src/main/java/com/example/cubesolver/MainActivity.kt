@@ -56,9 +56,8 @@ fun CubeSolverApp(btHelper: BluetoothHelper) {
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
 
     // --- Shared app state ---
-    var isConnected by remember { mutableStateOf(false) }
-    var cubeState by remember { mutableStateOf<String?>(null) } // null = UNKNOWN
     var robotState by remember { mutableStateOf("IDLE") } // IDLE / BUSY
+    var cubeState by remember { mutableStateOf<String?>(null) } // null = UNKNOWN
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -84,7 +83,8 @@ fun CubeSolverApp(btHelper: BluetoothHelper) {
                 BluetoothConnectivity(
                     bluetoothHelper = btHelper,  // your MainActivity instance
                     onConnect = { /* update any other state if needed */ },
-                    onDisconnect = { /* update state */ }
+                    onDisconnect = { /* update state */ },
+                    onRobotStateChange = { newState -> robotState = newState }
                 )
 
                 // 🔹 Tabs

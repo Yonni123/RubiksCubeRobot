@@ -33,6 +33,7 @@ int SequenceManager::startSequence(const char* moveString)
     {
         busy = false;
         activeSequence[0] = '\0';
+        notifyState();
         return 0;
     }
 
@@ -45,6 +46,7 @@ int SequenceManager::startSequence(const char* moveString)
     sequenceIndex = 0;
     nextMoveAt = millis();
     busy = true;
+    notifyState();
 
     return 0;
 }
@@ -76,12 +78,21 @@ int SequenceManager::tick()
     return scheduleNextMove();
 }
 
+void SequenceManager::notifyState()
+{
+    if (busy)
+        Serial.println("BUSY");
+    else
+        Serial.println("IDLE");
+}
+
 // Parse and schedule the next move
 int SequenceManager::scheduleNextMove()
 {
     if (!activeSequence)
     {
         busy = false;
+        notifyState();
         return 0;
     }
 
@@ -94,6 +105,7 @@ int SequenceManager::scheduleNextMove()
     {
         busy = false;
         activeSequence[0] = '\0';
+        notifyState();
         return 0;
     }
 
@@ -107,6 +119,7 @@ int SequenceManager::scheduleNextMove()
     {
         busy = false;
         activeSequence[0] = '\0';
+        notifyState();
         return -3;  // servo error
     }
 
@@ -118,6 +131,7 @@ int SequenceManager::scheduleNextMove()
     {
         busy = false;
         activeSequence[0] = '\0';
+        notifyState();
         return -4;  // state error
     }
     sequenceIndex++;
@@ -127,6 +141,7 @@ int SequenceManager::scheduleNextMove()
     {
         busy = false;
         activeSequence[0] = '\0';
+        notifyState();
         return -5;  // delay error
     }
 

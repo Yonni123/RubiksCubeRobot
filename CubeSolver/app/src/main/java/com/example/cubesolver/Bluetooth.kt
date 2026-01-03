@@ -23,7 +23,8 @@ import androidx.compose.ui.window.Dialog
 fun BluetoothConnectivity(
     bluetoothHelper: BluetoothHelper,
     onConnect: () -> Unit,
-    onDisconnect: () -> Unit
+    onDisconnect: () -> Unit,
+    onRobotStateChange: (String) -> Unit
 ) {
     var showBluetoothDialog by remember { mutableStateOf(false) }
     var devices by remember { mutableStateOf(listOf<BluetoothDevice>()) }
@@ -102,6 +103,9 @@ fun BluetoothConnectivity(
                                             onFailed = {
                                                 isConnecting = false
                                                 // Optional: show toast "Failed"
+                                            },
+                                            onRobotStateChange = { state ->
+                                                onRobotStateChange(state)
                                             }
                                         )
                                     }
