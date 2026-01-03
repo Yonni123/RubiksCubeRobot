@@ -92,6 +92,7 @@ fun CubeSolverApp(btHelper: BluetoothHelper) {
                     AppDestinations.HOME -> {
                         HomeTab(
                             modifier = Modifier,
+                            btHelper = btHelper,
                             robotState = robotState,
                             cubeState = cubeState
                         )
@@ -99,7 +100,7 @@ fun CubeSolverApp(btHelper: BluetoothHelper) {
 
                     AppDestinations.SCAN -> {
                         ScanTab(
-                            isBluetoothConnected = isConnected,
+                            btHelper = btHelper,
                             onCubeScanned = { scannedCube ->
                                 cubeState = scannedCube
                             }
