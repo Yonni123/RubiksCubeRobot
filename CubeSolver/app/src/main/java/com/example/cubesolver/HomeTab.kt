@@ -103,15 +103,28 @@ fun HomeTab(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Button(
-                    onClick = { /* open robot */ },
-                    enabled = robotState == "IDLE" && enabled,
+                    onClick = {
+                        // Send "OPEN" command to robot
+                        btHelper.send("MOVE 1R0_3R0_5R0_7R0") { e ->
+                            // Optional: handle error
+                            println("Failed to send OPEN: ${e.message}")
+                        }
+                    },
+                    enabled = robotState == "IDLE" && btHelper.isConnected,
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Open")
                 }
+
                 Button(
-                    onClick = { /* close robot */ },
-                    enabled = robotState == "IDLE" && enabled,
+                    onClick = {
+                        // Send "Close" command to robot
+                        btHelper.send("MOVE 1C0_3C0_5C0_7C0") { e ->
+                            // Optional: handle error
+                            println("Failed to send CLOSE: ${e.message}")
+                        }
+                    },
+                    enabled = robotState == "IDLE" && btHelper.isConnected,
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Close")
