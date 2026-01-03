@@ -13,9 +13,16 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.sp
 import com.example.cubesolver.bluetooth.BluetoothHelper
+
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 
 @Composable
 fun ScanTab(
@@ -23,6 +30,30 @@ fun ScanTab(
     btHelper: BluetoothHelper,
     onCubeScanned: (String) -> Unit
 ) {
+    val context = LocalContext.current
+
+    var hasCameraPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        hasCameraPermission = granted
+    }
+
+    // Ask permission when ScanTab first appears
+    LaunchedEffect(Unit) {
+        if (!hasCameraPermission) {
+            permissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
     var flashEnabled by remember { mutableStateOf(false) }
     var scanning by remember { mutableStateOf(false) }
     var currentFace by remember { mutableStateOf(1) } // 1..6 cube faces
@@ -45,29 +76,88 @@ fun ScanTab(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f) // makes it square
+                    .aspectRatio(1f)
                     .border(2.dp, Color.Gray, RoundedCornerShape(8.dp))
-                    .background(Color.Black.copy(alpha = 0.2f)), // placeholder background
+                    .clip(RoundedCornerShape(8.dp)) // clip camera to the square
+                    .background(Color.Black),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Camera Preview", color = Color.White)
 
-                // --- 3x3 Grid Overlay ---
+                if (hasCameraPermission && btHelper.isConnected) {
+                    CameraPreview(
+                        modifier = Modifier.matchParentSize(),
+                        flashEnabled = flashEnabled
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(Color.Black.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (!hasCameraPermission)
+                                "Camera permission required"
+                            else
+                                "Connect robot to start scanning",
+                            color = Color.White
+                        )
+                    }
+                }
+
+                // 🔹 3x3 grid overlay (unchanged)
                 Canvas(modifier = Modifier.matchParentSize()) {
-                    val width = size.width
-                    val height = size.height
-                    val thirdW = width / 3
-                    val thirdH = height / 3
-                    val lineColor = Color.White.copy(alpha = 0.6f)
-                    val strokeWidth = 2.dp.toPx()
+                    val w = size.width
+                    val h = size.height
 
-                    // vertical lines
-                    drawLine(lineColor, Offset(thirdW, 0f), Offset(thirdW, height), strokeWidth)
-                    drawLine(lineColor, Offset(thirdW * 2, 0f), Offset(thirdW * 2, height), strokeWidth)
+                    val thirdW = w / 3f
+                    val thirdH = h / 3f
 
-                    // horizontal lines
-                    drawLine(lineColor, Offset(0f, thirdH), Offset(width, thirdH), strokeWidth)
-                    drawLine(lineColor, Offset(0f, thirdH * 2), Offset(width, thirdH * 2), strokeWidth)
+                    val stroke = 2.dp.toPx()
+                    val gridColor = Color.White.copy(alpha = 0.6f)
+                    val sampleColor = Color.Yellow.copy(alpha = 0.8f)
+
+                    // --- Draw grid lines ---
+                    for (i in 1..2) {
+                        drawLine(
+                            gridColor,
+                            Offset(thirdW * i, 0f),
+                            Offset(thirdW * i, h),
+                            stroke
+                        )
+                        drawLine(
+                            gridColor,
+                            Offset(0f, thirdH * i),
+                            Offset(w, thirdH * i),
+                            stroke
+                        )
+                    }
+
+                    // --- Draw sampling squares ---
+                    val sampleScale = 0.4f // 40% of tile size
+                    val sampleW = thirdW * sampleScale
+                    val sampleH = thirdH * sampleScale
+
+                    for (row in 0..2) {
+                        for (col in 0..2) {
+                            val tileLeft = col * thirdW
+                            val tileTop = row * thirdH
+
+                            val sampleLeft =
+                                tileLeft + (thirdW - sampleW) / 2f
+                            val sampleTop =
+                                tileTop + (thirdH - sampleH) / 2f
+
+                            drawRect(
+                                color = sampleColor,
+                                topLeft = Offset(sampleLeft, sampleTop),
+                                size = androidx.compose.ui.geometry.Size(sampleW, sampleH),
+                                style = androidx.compose.ui.graphics.drawscope.Stroke(
+                                    width = 2.dp.toPx()
+                                )
+                            )
+                        }
+                    }
                 }
             }
 
@@ -92,17 +182,91 @@ fun ScanTab(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
-                    onClick = { currentFace = (currentFace % 6) + 1 },
-                    enabled = scanning && enabled,
-                    modifier = Modifier.weight(1f)
-                ) { Text("Next Face") }
-
-                Button(
                     onClick = { scanning = false },
                     enabled = scanning && enabled,
                     modifier = Modifier.weight(1f)
                 ) { Text("Cancel") }
+
+                Button(
+                    onClick = { currentFace = (currentFace % 6) + 1 },
+                    enabled = scanning && enabled,
+                    modifier = Modifier.weight(1f)
+                ) { Text("Next Face") }
             }
+        }
+    }
+}
+
+@Composable
+fun CameraPreview(
+    modifier: Modifier = Modifier,
+    flashEnabled: Boolean
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+
+    var camera by remember { mutableStateOf<androidx.camera.core.Camera?>(null) }
+
+    AndroidView(
+        modifier = modifier,
+        factory = { ctx ->
+            val previewView = androidx.camera.view.PreviewView(ctx).apply {
+                scaleType = androidx.camera.view.PreviewView.ScaleType.FILL_CENTER
+            }
+
+            val cameraProviderFuture =
+                androidx.camera.lifecycle.ProcessCameraProvider.getInstance(ctx)
+
+            cameraProviderFuture.addListener({
+                val cameraProvider = cameraProviderFuture.get()
+
+                // 🔑 FORCE SQUARE OUTPUT
+                val resolutionSelector =
+                    androidx.camera.core.resolutionselector.ResolutionSelector.Builder()
+                        .setAspectRatioStrategy(
+                            androidx.camera.core.resolutionselector.AspectRatioStrategy(
+                                androidx.camera.core.AspectRatio.RATIO_4_3,
+                                androidx.camera.core.resolutionselector.AspectRatioStrategy.FALLBACK_RULE_AUTO
+                            )
+                        )
+                        .build()
+
+                val preview = androidx.camera.core.Preview.Builder()
+                    .setResolutionSelector(resolutionSelector)
+                    .build()
+                    .also {
+                        it.setSurfaceProvider(previewView.surfaceProvider)
+                    }
+
+                val cameraSelector =
+                    androidx.camera.core.CameraSelector.DEFAULT_BACK_CAMERA
+
+                cameraProvider.unbindAll()
+
+                camera = cameraProvider.bindToLifecycle(
+                    lifecycleOwner,
+                    cameraSelector,
+                    preview
+                )
+
+            }, ContextCompat.getMainExecutor(ctx))
+
+            previewView
+        }
+    )
+
+    LaunchedEffect(flashEnabled, camera) {
+        camera?.cameraControl?.enableTorch(flashEnabled)
+    }
+
+    // Force 2× zoom, this is better for aspect ratio during scanning
+    LaunchedEffect(camera) {
+        camera?.cameraControl?.setZoomRatio(2.0f)
+    }
+
+    DisposableEffect(camera) {
+        onDispose {
+            camera?.cameraControl?.enableTorch(false)
         }
     }
 }

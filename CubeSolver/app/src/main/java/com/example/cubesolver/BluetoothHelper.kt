@@ -42,7 +42,7 @@ class BluetoothHelper {
                 isConnected = true
 
                 // Start reading in a coroutine
-                startReading(onRobotStateChange) // <-- make sure startReading is suspend
+                startReading(onRobotStateChange)
 
                 withContext(Dispatchers.Main) { onConnected() }
             } catch (e: IOException) {
