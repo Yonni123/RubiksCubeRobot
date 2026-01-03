@@ -33,14 +33,18 @@ import com.example.cubesolver.tabs.HomeTab
 import com.example.cubesolver.tabs.ScanTab
 import com.example.cubesolver.tabs.ControlTab
 import com.example.cubesolver.bluetooth.BluetoothConnectivity
+import com.example.cubesolver.bluetooth.BluetoothHelper
 
 class MainActivity : ComponentActivity() {
+    // Shared Bluetooth helper for the whole app
+    val bluetoothHelper by lazy { BluetoothHelper() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             CubeSolverTheme {
-                CubeSolverApp()
+                CubeSolverApp(bluetoothHelper)
             }
         }
     }
@@ -48,7 +52,7 @@ class MainActivity : ComponentActivity() {
 
 @PreviewScreenSizes
 @Composable
-fun CubeSolverApp() {
+fun CubeSolverApp(btHelper: BluetoothHelper) {
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
 
     // --- Shared app state ---
@@ -78,9 +82,9 @@ fun CubeSolverApp() {
 
                 // 🔹 Bluetooth UI
                 BluetoothConnectivity(
-                    isConnected = isConnected,
-                    onConnect = { isConnected = true },
-                    onDisconnect = { isConnected = false }
+                    bluetoothHelper = btHelper,  // your MainActivity instance
+                    onConnect = { /* update any other state if needed */ },
+                    onDisconnect = { /* update state */ }
                 )
 
                 // 🔹 Tabs

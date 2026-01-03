@@ -21,33 +21,26 @@ import androidx.compose.ui.window.Dialog
 
 @Composable
 fun BluetoothConnectivity(
-    isConnected: Boolean,
+    bluetoothHelper: BluetoothHelper,
     onConnect: () -> Unit,
     onDisconnect: () -> Unit
 ) {
     var showBluetoothDialog by remember { mutableStateOf(false) }
-    val bluetoothHelper = remember { BluetoothHelper() }
     var devices by remember { mutableStateOf(listOf<BluetoothDevice>()) }
     var isConnecting by remember { mutableStateOf(false) }
 
-    // --- Permission launcher (asks when pressing connect) ---
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted ->
             if (granted) {
                 devices = bluetoothHelper.getPairedDevices()
                 showBluetoothDialog = true
-            } else {
-                // Optional: show toast "Permission denied"
             }
         }
     )
 
     // --- Bluetooth Card ---
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
+    Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(4.dp)) {
         Row(
             modifier = Modifier
                 .padding(16.dp)
@@ -57,16 +50,15 @@ fun BluetoothConnectivity(
         ) {
             Text("Bluetooth:", style = MaterialTheme.typography.titleMedium)
             Text(
-                text = if (isConnected) "Connected" else if (isConnecting) "Connecting..." else "Disconnected",
+                text = if (bluetoothHelper.isConnected) "Connected" else if (isConnecting) "Connecting..." else "Disconnected",
                 style = MaterialTheme.typography.titleMedium,
-                color = if (isConnected) Color(0xFF4CAF50) else Color.Red
+                color = if (bluetoothHelper.isConnected) Color(0xFF4CAF50) else Color.Red
             )
             Button(onClick = {
-                if (isConnected) {
+                if (bluetoothHelper.isConnected) {
                     bluetoothHelper.disconnect()
                     onDisconnect()
                 } else {
-                    // Request permission only when pressing the button
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         permissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
                     } else {
@@ -75,18 +67,16 @@ fun BluetoothConnectivity(
                     }
                 }
             }) {
-                Text(if (isConnected) "Disconnect" else "Connect")
+                Text(if (bluetoothHelper.isConnected) "Disconnect" else "Connect")
             }
         }
     }
 
-    // --- Device Selection Dialog ---
+    // --- Device selection dialog ---
     if (showBluetoothDialog) {
         Dialog(onDismissRequest = { showBluetoothDialog = false }) {
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
                 shape = RoundedCornerShape(8.dp),
                 elevation = CardDefaults.cardElevation(8.dp)
             ) {
@@ -103,14 +93,17 @@ fun BluetoothConnectivity(
                                     .clickable {
                                         isConnecting = true
                                         showBluetoothDialog = false
-                                        bluetoothHelper.connect(device, onConnected = {
-                                            isConnecting = false
-                                            onConnect()
-                                            showBluetoothDialog = false
-                                        }, onFailed = {
-                                            isConnecting = false
-                                            // Optional: show toast "Failed to connect"
-                                        })
+                                        bluetoothHelper.connect(
+                                            device,
+                                            onConnected = {
+                                                isConnecting = false
+                                                onConnect()
+                                            },
+                                            onFailed = {
+                                                isConnecting = false
+                                                // Optional: show toast "Failed"
+                                            }
+                                        )
                                     }
                                     .padding(12.dp)
                             ) {
