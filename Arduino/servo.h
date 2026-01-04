@@ -6,6 +6,9 @@
 // ToString for servo types
 void servoTypeToString(ServoType type, char* buffer, size_t bufferSize);
 
+// Convert character to ServoType (uppercase is slider, lowercase is spinner)
+bool parseServoType(char c, ServoType& type);
+
 class Servo
 {
 private:
@@ -23,7 +26,11 @@ public:
         type(type),
         cal(calibration)
     {
-        pulse = calibration.C_us;   // Start at center position
+        if (static_cast<int>(type) % 2 == 0) {
+            pulse = calibration.C_us;  // We want spinners default at center
+        } else {
+            pulse = calibration.R_us;  // We want sliders in release by default
+        }
     }
 
     // State control
@@ -50,8 +57,12 @@ public:
                 pulse = cal.C_us;
 
             break;
-        }
+        case STATE_r:
+            pulse = (cal.C_us + cal.R_us) / 2; break;
+        case STATE_l:
+            pulse = (cal.C_us + cal.L_us) / 2; break;
         state = next;
+        }
     }
 
     ServoState getState() const

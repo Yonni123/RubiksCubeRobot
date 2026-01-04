@@ -14,6 +14,8 @@ static bool parseServoState(char c, ServoState& state)
         case 'L': state = STATE_L; return true;
         case 'C': state = STATE_C; return true;
         case 'R': state = STATE_R; return true;
+        case 'r': state = STATE_r; return true;
+        case 'l': state = STATE_l; return true;
         default: return false;
     }
 }
@@ -53,7 +55,7 @@ int SequenceManager::startSequence(const char* moveString)
 
 struct MoveToExecute
 {
-    int servoNum;
+    ServoType servoType;
     ServoState state;
     bool alreadyExecuted = false;
 };
@@ -71,7 +73,7 @@ int SequenceManager::tick()
 
     if (!pendingMove.alreadyExecuted)
     {
-        servos[pendingMove.servoNum].setState(pendingMove.state);
+        servos[pendingMove.servoType].setState(pendingMove.state);
         pendingMove.alreadyExecuted = true;
     }
 
@@ -109,21 +111,16 @@ int SequenceManager::scheduleNextMove()
         return 0;
     }
 
-    // ---- Parse servo number ----
-    char* endPtr;
-    unsigned long servoNum =
-        strtoul(&activeSequence[sequenceIndex], &endPtr, 10);
-
-    if (endPtr == &activeSequence[sequenceIndex] ||
-        servoNum >= NUM_SERVOS)
+    // ---- Parse servo type ----
+    ServoType servoType;
+    if (!parseServoType(activeSequence[sequenceIndex], servoType))
     {
         busy = false;
         activeSequence[0] = '\0';
         notifyState();
-        return -3;  // servo error
+        return -3;  // servo type error
     }
-
-    sequenceIndex = endPtr - activeSequence;
+    sequenceIndex++;
 
     // ---- Parse servo state ----
     ServoState state;
@@ -137,6 +134,7 @@ int SequenceManager::scheduleNextMove()
     sequenceIndex++;
 
     // ---- Parse delay ----
+    char* endPtr;
     if (!isdigit(activeSequence[sequenceIndex]))
     {
         busy = false;
@@ -151,7 +149,7 @@ int SequenceManager::scheduleNextMove()
     sequenceIndex = endPtr - activeSequence;
 
     // ---- Make the move pending ----
-    pendingMove.servoNum = servoNum;
+    pendingMove.servoType = servoType;
     pendingMove.state = state;
     pendingMove.alreadyExecuted = false;
 

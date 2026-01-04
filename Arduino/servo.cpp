@@ -16,6 +16,22 @@ Servo servos[NUM_SERVOS] =
     [BACK_SLIDER]   = Servo(BACK_SLIDER_PIN,   BACK_SLIDER,   readCalibration(BACK_SLIDER))
 };
 
+bool parseServoType(char c, ServoType& type)
+{
+    switch (c)
+    {
+        case 'R': type = RIGHT_SLIDER; return true;
+        case 'L': type = LEFT_SLIDER; return true;
+        case 'F': type = FRONT_SLIDER; return true;
+        case 'B': type = BACK_SLIDER; return true;
+        case 'r': type = RIGHT_SPINNER; return true;
+        case 'l': type = LEFT_SPINNER; return true;
+        case 'f': type = FRONT_SPINNER; return true;
+        case 'b': type = BACK_SPINNER; return true;
+        default: return false;
+    }
+}
+
 // Call this function in the main loop to send PWM signals to all servos to keep them in position
 void sendPWMAll()
 {

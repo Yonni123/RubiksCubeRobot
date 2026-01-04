@@ -21,7 +21,7 @@ void APILoop()
     if (line.length() == 0)
         return;
 
-    line.toUpperCase();
+    //line.toUpperCase();
 
     // ---- TOKENIZE ----
     const int MAX_TOKENS = 5;
@@ -50,11 +50,11 @@ void APILoop()
         Serial.println("HELP");
         Serial.println("PING");
         Serial.println("STATUS [servo]");
-        Serial.println("    servo: servo number (0-" + String(NUM_SERVOS - 1) + ")");
+        Serial.println("    servo: servo type character (R, L, F, B for sliders; r, l, f, b for spinners)");
         Serial.println("    if no servo specified, returns BUSY or IDLE depending on sequence status");
         Serial.println("MOVE <string>|C");
-        Serial.println("    Example MOVE string: 2C0_4R500_2L1000");
-        Serial.println("    (move servo 2 to C asap, servo 4 to R 500ms after asap, servo 2 to L 1000ms after asap)");
+        Serial.println("    Example MOVE string: rC0_lR500_fL1000");
+        Serial.println("    (move servo RIGHT_SPINNER to CENTER at time 0ms, LEFT_SLIDER to RIGHT AFTER waiting 500ms, FRONT_SLIDER to LEFT AFTER waiting 1000ms)");
         Serial.println("    'C' alone cancels current sequence (if busy)");
         return;
     }
@@ -110,23 +110,20 @@ void APILoop()
             return;
         }
 
-        int servo = tokens[1].toInt();
-
-        if (servo < 0 || servo >= NUM_SERVOS)
+        ServoType servo;
+        if (!parseServoType(tokens[1][0], servo))
         {
-            Serial.println("ERR servo out_of_range");
+            Serial.println("ERR servo_type");
             return;
         }
 
-        char c = 'C';
         switch (servos[servo].getState())
         {
-            case STATE_R: c = 'R'; break;
-            case STATE_L: c = 'L'; break;
-            case STATE_C: c = 'C'; break;
+            case STATE_R: Serial.println('R'); break;
+            case STATE_L: Serial.println('L'); break;
+            case STATE_C: Serial.println('C'); break;
         }
 
-        Serial.println(c);
         return;
     }
 
