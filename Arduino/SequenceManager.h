@@ -29,6 +29,8 @@ public:
     // Query if sequence is still running
     bool isBusy() const { return busy; }
 
+    unsigned long idleTimeMs;  // Time since last sequence completed
+
 private:
     char activeSequence[512];
     int sequenceIndex = 0;

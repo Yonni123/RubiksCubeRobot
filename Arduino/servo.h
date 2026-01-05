@@ -49,20 +49,20 @@ public:
                 break;
             }  
 
-            if (state == STATE_L)
+            if (state == STATE_L || state == STATE_l)
                 pulse = cal.C_us + cal.CD_us;
-            else if (state == STATE_R)
+            else if (state == STATE_R || state == STATE_r)
                 pulse = cal.C_us - cal.CD_us;
             else
-                pulse = cal.C_us;
+                pulse = cal.C_us;   // Double center is absolute center
 
             break;
         case STATE_r:
             pulse = (cal.C_us + cal.R_us) / 2; break;
         case STATE_l:
             pulse = (cal.C_us + cal.L_us) / 2; break;
-        state = next;
         }
+        state = next;
     }
 
     ServoState getState() const

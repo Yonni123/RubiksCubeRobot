@@ -122,6 +122,9 @@ void APILoop()
             case STATE_R: Serial.println('R'); break;
             case STATE_L: Serial.println('L'); break;
             case STATE_C: Serial.println('C'); break;
+            case STATE_r: Serial.println('r'); break;
+            case STATE_l: Serial.println('l'); break;
+            default: Serial.println("ERR state"); break;
         }
 
         return;
