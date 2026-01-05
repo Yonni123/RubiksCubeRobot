@@ -14,3 +14,10 @@
 // After running in calibration mode, open serial monitor and type "h" for help
 // It will let you control individual servos to calibrate them perfectly
 #define CALIBRATE false
+
+// MOVE FL0_BL0_RR0_LR0_fR250_fR0_bL0_bL0_ RC250_LC0_FR250_BR0_fC250_fC0_bC0_bC0_FC250_BC0
+// MOVE FL0_BL0_RR0_LR0_fL250_fL0_bR0_bR0_ RC250_LC0_FR250_BR0_fC250_fC0_bC0_bC0_FC250_BC0
+// MOVE rR0_RR250_rC250_rC0_RC250
+// MOVE RC0_LC0_FC0_BC0
+
+// MOVE FLBLRRLR250fRfRbLbL250RCLC250FRBR250fCfCbCbC250FCBC

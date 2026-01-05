@@ -105,7 +105,7 @@ fun HomeTab(
                 Button(
                     onClick = {
                         // Send "OPEN" command to robot
-                        btHelper.send("MOVE 1R0_3R0_5R0_7R0") { e ->
+                        btHelper.send("MOVE RRLRFRBR") { e ->
                             // Optional: handle error
                             println("Failed to send OPEN: ${e.message}")
                         }
@@ -119,7 +119,7 @@ fun HomeTab(
                 Button(
                     onClick = {
                         // Send "Close" command to robot
-                        btHelper.send("MOVE 1C0_3C0_5C0_7C0") { e ->
+                        btHelper.send("MOVE RCLCFCBC") { e ->
                             // Optional: handle error
                             println("Failed to send CLOSE: ${e.message}")
                         }

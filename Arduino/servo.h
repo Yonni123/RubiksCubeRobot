@@ -34,36 +34,7 @@ public:
     }
 
     // State control
-    void setState(ServoState next)
-    {
-        switch (next)
-        {
-        case STATE_L:
-            pulse = cal.L_us; break;
-        case STATE_R:
-            pulse = cal.R_us; break;
-        case STATE_C:
-            if (type % 2 == 1) // Slider
-            {
-                pulse = cal.C_us;
-                break;
-            }  
-
-            if (state == STATE_L || state == STATE_l)
-                pulse = cal.C_us + cal.CD_us;
-            else if (state == STATE_R || state == STATE_r)
-                pulse = cal.C_us - cal.CD_us;
-            else
-                pulse = cal.C_us;   // Double center is absolute center
-
-            break;
-        case STATE_r:
-            pulse = (cal.C_us + cal.R_us) / 2; break;
-        case STATE_l:
-            pulse = (cal.C_us + cal.L_us) / 2; break;
-        }
-        state = next;
-    }
+    void setState(ServoState next);
 
     ServoState getState() const
     {

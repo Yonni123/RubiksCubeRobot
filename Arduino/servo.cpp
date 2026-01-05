@@ -3,6 +3,62 @@
 #include "Config.h"
 #include "Calibrate.h"
 
+void Servo::setState(ServoState next)
+{
+    switch (next)
+    {
+    case STATE_L:
+        if (type % 2 == 1) // Slider
+        {
+            pulse = cal.L_us;
+            break;
+        }
+
+        if (state != STATE_L)
+            pulse = cal.L_us - cal.CD_us;  // compensate
+        else
+            pulse = cal.L_us;              // true left
+        break;
+
+    case STATE_R:
+        if (type % 2 == 1) // Slider
+        {
+            pulse = cal.R_us;
+            break;
+        }
+
+        if (state != STATE_R)
+            pulse = cal.R_us + cal.CD_us;  // compensate
+        else
+            pulse = cal.R_us;              // true right
+        break;
+
+    case STATE_C:
+        if (type % 2 == 1) // Slider
+        {
+            pulse = cal.C_us;
+            break;
+        }
+
+        if (state == STATE_L || state == STATE_l)
+            pulse = cal.C_us + cal.CD_us;  // from left → push right, compensate
+        else if (state == STATE_R || state == STATE_r)
+            pulse = cal.C_us - cal.CD_us;  // from right → push left, compensate
+        else
+            pulse = cal.C_us;              // true center
+        break;
+
+    case STATE_l:
+        pulse = (cal.C_us + cal.L_us) / 2;
+        break;
+
+    case STATE_r:
+        pulse = (cal.C_us + cal.R_us) / 2;
+        break;
+    }
+
+    state = next;
+}
 
 Servo servos[NUM_SERVOS] =
 {

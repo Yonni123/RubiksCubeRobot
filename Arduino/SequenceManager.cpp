@@ -53,14 +53,6 @@ int SequenceManager::startSequence(const char* moveString)
     return 0;
 }
 
-struct MoveToExecute
-{
-    ServoType servoType;
-    ServoState state;
-    bool alreadyExecuted = false;
-};
-MoveToExecute pendingMove;
-
 // Called repeatedly from loop()
 int SequenceManager::tick()
 {
@@ -71,13 +63,7 @@ int SequenceManager::tick()
     if (now < nextMoveAt)
         return 0;
 
-    if (!pendingMove.alreadyExecuted)
-    {
-        servos[pendingMove.servoType].setState(pendingMove.state);
-        pendingMove.alreadyExecuted = true;
-    }
-
-    return scheduleNextMove();
+    return executeUntilDelay();
 }
 
 void SequenceManager::notifyState()
@@ -88,21 +74,40 @@ void SequenceManager::notifyState()
         Serial.println("IDLE");
 }
 
-// Parse and schedule the next move
-int SequenceManager::scheduleNextMove()
+int SequenceManager::executeUntilDelay()
 {
-    if (!activeSequence)
+    // Execute until we hit a delay or end of sequence
+    while (activeSequence[sequenceIndex] != '\0' &&
+       !isdigit(activeSequence[sequenceIndex]))
     {
-        busy = false;
-        notifyState();
-        return 0;
-    }
-
-    // Skip spaces and separators
-    while (activeSequence[sequenceIndex] == ' ' || activeSequence[sequenceIndex] == '_')
+        Serial.print("Sequence char: ");
+        Serial.println(activeSequence[sequenceIndex]);
+        ServoType servoType;
+        if (!parseServoType(activeSequence[sequenceIndex], servoType))
+        {
+            busy = false;
+            activeSequence[0] = '\0';
+            notifyState();
+            return -3;  // servo type error
+        }
         sequenceIndex++;
 
-    // End of sequence
+        ServoState state;
+        if (!parseServoState(activeSequence[sequenceIndex], state))
+        {
+            busy = false;
+            activeSequence[0] = '\0';
+            notifyState();
+            return -4;  // state error
+        }
+        sequenceIndex++;
+
+        // Execute move immediately
+        servos[servoType].setState(state);
+        servos[servoType].sendPulse();
+    }
+
+    // ---- End of sequence ----
     if (activeSequence[sequenceIndex] == '\0')
     {
         busy = false;
@@ -111,50 +116,17 @@ int SequenceManager::scheduleNextMove()
         return 0;
     }
 
-    // ---- Parse servo type ----
-    ServoType servoType;
-    if (!parseServoType(activeSequence[sequenceIndex], servoType))
+    // ---- Delay encountered ----
+    if (isdigit(activeSequence[sequenceIndex]))
     {
-        busy = false;
-        activeSequence[0] = '\0';
-        notifyState();
-        return -3;  // servo type error
-    }
-    sequenceIndex++;
+        char* endPtr;
+        unsigned long delay =
+            strtoul(&activeSequence[sequenceIndex], &endPtr, 10);
 
-    // ---- Parse servo state ----
-    ServoState state;
-    if (!parseServoState(activeSequence[sequenceIndex], state))
-    {
-        busy = false;
-        activeSequence[0] = '\0';
-        notifyState();
-        return -4;  // state error
-    }
-    sequenceIndex++;
-
-    // ---- Parse delay ----
-    char* endPtr;
-    if (!isdigit(activeSequence[sequenceIndex]))
-    {
-        busy = false;
-        activeSequence[0] = '\0';
-        notifyState();
-        return -5;  // delay error
+        sequenceIndex = endPtr - activeSequence;
+        nextMoveAt = millis() + delay;
+        return 0;
     }
 
-    unsigned long delayMs =
-        strtoul(&activeSequence[sequenceIndex], &endPtr, 10);
-
-    sequenceIndex = endPtr - activeSequence;
-
-    // ---- Make the move pending ----
-    pendingMove.servoType = servoType;
-    pendingMove.state = state;
-    pendingMove.alreadyExecuted = false;
-
-    // ---- Schedule next move ----
-    nextMoveAt = millis() + delayMs;
-
-    return 0;
+    return 1;   // Current move executed, more to schedule
 }

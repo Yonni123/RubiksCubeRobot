@@ -37,7 +37,7 @@ private:
     unsigned long nextMoveAt = 0;
     bool busy = false;
 
-    int scheduleNextMove();
+    int executeUntilDelay();
     void notifyState();
 };
 

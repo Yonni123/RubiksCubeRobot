@@ -1,0 +1,32 @@
+private fun sendFaceCommand(btHelper: BluetoothHelper, face: Int) {
+    var cmd = "MOVE "
+
+    if (face == 1) {
+        cmd += "rr0_FL250_BL0_RR0_LR0_fL250_bR0_FC0_BC0_lr0"  // Scan RIGHT side
+    } else if (face == 2) {
+        cmd += "rr0_lC0_FL0_BL0_RR250_LR0_fC250_bC0_FC250_BC0_FC0_BC0_RC0_LC0_rC250"  // RECOVER
+        cmd += "_lr0_FL250_BL0_RR0_LR0_fR250_bL0_FC0_BC0_rr0" // Scan LEFT side
+    } else if (face == 3) {
+        cmd += "lr0_rC0_FL0_BL0_RR0_LR0_fC250_bC0_FC250_BC0_FC0_BC0_RC0_LC0_lC250"  // RECOVER
+        cmd += "_br0_RL0_LL0_BR0_FR0_rL250_lR0_RC0_LC0_fr0"  // Scan BACK side
+    } else if (face == 4) {
+        cmd += "br0_fC0_RL0_LL0_BR0_FR0_rC250_lC0_RC250_LC0_RC0_LC0_BC0_FC0_bC250"  // Recover
+        cmd += "_fr0_RL0_LL0_BR0_FR0_rR250_lL0_RC0_LC0_br0" // Scan FRONT side
+    } else if (face == 5) {
+        cmd += "fr0_bC0_RL0_LL0_BR0_FR0_rC250_lC0_RC250_LC0_RC0_LC0_BC0_FC0_fC250"  // Recover
+        cmd += "_FL0_BL0_RR0_LR0_fL250_bR0_RL250_LL0_FR250_BR0_fC250_bC0_FC250_BC0_RC250_LC0" // Rotate cube
+        cmd += "_rr0_FL0_BL0_RR0_LR0_fL250_bR0_FC0_BC0_lr0" // Scan DOWN side
+    } else if (face == 6) {
+        cmd += "rr0_lC0_FL0_BL0_RR0_LR0_fC250_bC0_FC250_BC0_FC0_BC0_RC0_LC0_rC250"  // Recover
+        cmd += "_lr0_FL0_BL0_RR0_LR0_fR250_bL0_FC0_BC0_rr0" // Scan UP side
+    } else if (face == 7) { // This is a special case, it is start of reviewing phase
+        cmd += "lr0_rC0_FL0_BL0_RR0_LR0_fC250_bC0_FC250_BC0_FC0_BC0_RC0_LC0_lC250"  // Recover from face 6
+        cmd += "_FL0_BL0_RR0_LR0_fR250_bL0_RL250_LL0_FR250_BR0_fC250_bC0_FC250_BC0_RC250_LC0" // Flip the cube back
+        cmd += "rr0_FL0_BL0_RR0_LR0_fL250_bR0_FC0_BC0_lr0"  // Show face 1 for review
+    }
+    else {
+        return
+    }
+
+    btHelper.send(cmd)
+}

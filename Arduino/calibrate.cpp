@@ -164,8 +164,6 @@ void calibrateSetup()
 
 void calibrateLoop()
 {
-    sendPWMAll();   // Since sequence manager is always idle, we need to keep sending PWM during calibration
-
     if (!Serial.available())
         return;
 
