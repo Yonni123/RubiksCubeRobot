@@ -8,17 +8,97 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.cubesolver.bluetooth.BluetoothHelper
+import org.kociemba.twophase.Search
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+fun solveCube(cubeState: String): String {
+    return Search.solution(
+        cubeState,
+        21,      // max depth
+        1000,    // timeout (ms)
+        false    // use separator
+    )
+}
+
+class SolverViewModel : ViewModel() {
+    var solverReady by mutableStateOf(false)
+        private set
+
+    init {
+        warmUpSolver()
+    }
+
+    private fun warmUpSolver() {
+        viewModelScope.launch(Dispatchers.Default) {
+            Search.solution(
+                "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
+                0,
+                1000,
+                false
+            )
+            solverReady = true
+        }
+    }
+}
 
 @Composable
 fun HomeTab(
     modifier: Modifier = Modifier,
     btHelper: BluetoothHelper,
     robotState: String,
-    cubeState: String?
+    cubeState: String?,
+    solverViewModel: SolverViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
-    val solution = cubeState?.let { "R U R' U'" } // dummy solution
+    var solution by remember { mutableStateOf<String?>(null) }
     var solveSpeed by remember { mutableStateOf(0.5f) } // 0..1, default 50%
+
+    val solverReady = solverViewModel.solverReady
+
+    if (!solverReady) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                elevation = CardDefaults.cardElevation(8.dp),
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.padding(24.dp)
+                ) {
+                    CircularProgressIndicator()
+                    Text(
+                        "Initializing solver…",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            }
+        }
+        return
+    }
+
+
+    LaunchedEffect(cubeState) {
+        if (cubeState == null) {
+            solution = null
+        } else {
+            solution = "Solving..."
+            solution = try {
+                withContext(Dispatchers.Default) {
+                    solveCube(cubeState)
+                }
+            } catch (e: Exception) {
+                "ERROR"
+            }
+        }
+    }
 
     // Determine alpha and enable state based on Bluetooth connection
     val alpha = if (btHelper.isConnected) 1f else 0.4f
@@ -89,7 +169,7 @@ fun HomeTab(
 
                     Button(
                         onClick = { /* solve button clicked */ },
-                        enabled = solution != null && enabled,
+                        enabled = solution != null && enabled && !solution.toString().startsWith("Error"),
                         modifier = Modifier.align(Alignment.End)
                     ) {
                         Text("Solve")
