@@ -27,3 +27,9 @@ struct ServoCal {
     unsigned int C_us;
     unsigned int CD_us; // Deviation for center position for spinners
 };
+
+enum CubeOrientation
+{
+    ORIENT_NORMAL,
+    ORIENT_INVERT
+};

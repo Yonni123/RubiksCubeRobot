@@ -6,10 +6,9 @@
 #include "API.h"
 #include "Types.h"
 
-#define RX_BUF_SIZE 720
 #define MAX_TOKENS  5
 
-static char rxBuf[RX_BUF_SIZE];
+static char rxBuf[SEQUENCE_BUFFER_SIZE];    // This is extremely wasteful for the SEQ command, but oh well fuck it
 static char* tokens[MAX_TOKENS];
 
 void APISetup()
@@ -53,7 +52,7 @@ void APILoop()
     if (!Serial.available())
         return;
 
-    int len = Serial.readBytesUntil('\n', rxBuf, RX_BUF_SIZE - 1);
+    int len = Serial.readBytesUntil('\n', rxBuf, SEQUENCE_BUFFER_SIZE - 1);
     rxBuf[len] = '\0';
 
     // Trim trailing CR (Windows serial)
@@ -90,6 +89,31 @@ void APILoop()
         }
 
         int res = seqManager.startSequence(tokens[1]);
+        if (res == 0) Serial.println("OK");
+        else if (res == -1) Serial.println("ERR busy");
+        else if (res == -2) Serial.println("ERR format");
+        else Serial.println("ERR");
+
+        return;
+    }
+
+    // --- MOVE ---
+    if (strcmp(cmd, "MOVE") == 0)
+    {
+        if (tokenCount != 3)
+        {
+            Serial.println("ERR args");
+            return;
+        }
+
+        int delay = atoi(tokens[1]);
+        if (delay < 0)
+        {
+            Serial.println("ERR delay");
+            return;
+        }
+
+        int res = seqManager.startMoves(tokens[2], delay);
         if (res == 0) Serial.println("OK");
         else if (res == -1) Serial.println("ERR busy");
         else if (res == -2) Serial.println("ERR format");

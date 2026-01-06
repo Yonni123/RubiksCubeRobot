@@ -14,3 +14,13 @@
 // After running in calibration mode, open serial monitor and type "h" for help
 // It will let you control individual servos to calibrate them perfectly
 #define CALIBRATE false
+
+// Size of the buffer to hold active sequences in SequenceManager (SEQ command)
+// A move (like U) can be a sequence like "rR220RR220rCrC220RC220rR2".
+// Solving the cube, expect 24 moves to be safe, this quickly blows up to over 1kB ish.
+// Please try not to exceed this size or increase it if your RAM allows it.
+#define SEQUENCE_BUFFER_SIZE 256
+
+// Size of the buffer to hold individual moves in MOVE command
+// God's number is 20, but just to be safe we allow a few extra moves
+#define MOVE_BUFFER_SIZE 32
