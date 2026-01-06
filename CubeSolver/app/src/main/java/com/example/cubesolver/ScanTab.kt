@@ -476,7 +476,7 @@ fun CubeGridOverlay() {
 
 private fun sendFaceCommand(btHelper: BluetoothHelper, face: Int) {
     var delay = 250
-    var cmd = "MOVE "
+    var cmd = "SEQ "
 
     if (face == 1) {
         cmd += "rrFLBLRRLR${delay}fLbRFCBClr0"  // Scan RIGHT side

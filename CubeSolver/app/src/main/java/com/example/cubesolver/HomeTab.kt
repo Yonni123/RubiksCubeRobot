@@ -134,7 +134,7 @@ fun HomeTab(
                             )
                         }
                         Button(
-                            onClick = { btHelper.send("MOVE C") },  // Cancel
+                            onClick = { btHelper.send("SEQ C") },  // Cancel
                             enabled = robotState == "BUSY" && enabled // also check Bluetooth
                         ) {
                             Text("Abort")
@@ -195,7 +195,7 @@ fun HomeTab(
                 Button(
                     onClick = {
                         // Send "OPEN" command to robot
-                        btHelper.send("MOVE RRLRFRBR") { e ->
+                        btHelper.send("SEQ RRLRFRBR") { e ->
                             // Optional: handle error
                             println("Failed to send OPEN: ${e.message}")
                         }
@@ -209,7 +209,7 @@ fun HomeTab(
                 Button(
                     onClick = {
                         // Send "Close" command to robot
-                        btHelper.send("MOVE RCLCFCBC") { e ->
+                        btHelper.send("SEQ RCLCFCBC") { e ->
                             // Optional: handle error
                             println("Failed to send CLOSE: ${e.message}")
                         }

@@ -214,7 +214,7 @@ class RobotController() {
         val parsed = parseCubeNotation(moves)
 
         // Build the full command string by calling each move's function
-        val robotCommand = "MOVE " + parsed.map { move ->
+        val robotCommand = "SEQ " + parsed.map { move ->
             moveMap[move]?.invoke() ?: ""
         }.joinToString("")  // no separators, everything is one big string
 

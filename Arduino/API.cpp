@@ -76,12 +76,12 @@ void APILoop()
         Serial.println("HELP");
         Serial.println("PING");
         Serial.println("STATUS [servo]");
-        Serial.println("MOVE <string>|C");
+        Serial.println("SEQ <string>|C");
         return;
     }
 
-    // --- MOVE ---
-    if (strcmp(cmd, "MOVE") == 0)
+    // --- SEQ ---
+    if (strcmp(cmd, "SEQ") == 0)
     {
         if (tokenCount != 2)
         {
