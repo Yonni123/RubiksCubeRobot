@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cubesolver.RobotController
 import com.example.cubesolver.bluetooth.BluetoothHelper
 import org.kociemba.twophase.Search
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +51,7 @@ class SolverViewModel : ViewModel() {
 fun HomeTab(
     modifier: Modifier = Modifier,
     btHelper: BluetoothHelper,
+    robotController: RobotController,
     robotState: String,
     cubeState: String?,
     solverViewModel: SolverViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
@@ -100,6 +102,10 @@ fun HomeTab(
         }
     }
 
+    LaunchedEffect(solveSpeed) {
+        robotController.setSpeed((solveSpeed * 100).toInt())
+    }
+
     // Determine alpha and enable state based on Bluetooth connection
     val alpha = if (btHelper.isConnected) 1f else 0.4f
     val enabled = btHelper.isConnected
@@ -128,7 +134,7 @@ fun HomeTab(
                             )
                         }
                         Button(
-                            onClick = { /* abort robot sequence */ },
+                            onClick = { btHelper.send("MOVE C") },  // Cancel
                             enabled = robotState == "BUSY" && enabled // also check Bluetooth
                         ) {
                             Text("Abort")
@@ -168,8 +174,12 @@ fun HomeTab(
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Button(
-                        onClick = { /* solve button clicked */ },
-                        enabled = solution != null && enabled && !solution.toString().startsWith("Error"),
+                        onClick = {
+                            solution?.let { sol ->
+                                robotController.executeMoves(btHelper, sol)
+                            }
+                        },
+                        //enabled = solution != null && enabled && !solution.toString().startsWith("Error"),
                         modifier = Modifier.align(Alignment.End)
                     ) {
                         Text("Solve")
