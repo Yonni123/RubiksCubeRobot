@@ -250,7 +250,13 @@ fun ScanTab(
 /* ===================== IMAGE PROCESSING ===================== */
 
 fun processCubeImages(images: List<Bitmap>): List<List<CubeColor>> {
-    val rawFaces: List<List<Color>> = images.map { sampleFaceColorsRaw(it) }
+    val rawFaces: List<List<Color>> = images.map { faceBitmap ->
+        val sampled = sampleFaceColorsRaw(faceBitmap)
+
+        // Rotate the sampled tiles 45° clockwise to correct the orientation
+        val rotateMap = listOf(6, 3, 0, 7, 4, 1, 8, 5, 2)
+        sampled.mapIndexed { i, _ -> sampled[rotateMap[i]] }
+    }
     val rawCenters: List<Color> = rawFaces.map { it[4] }
 
     // Step 1: assign each center a unique CubeColor
@@ -346,20 +352,6 @@ fun sampleFaceColorsRaw(bitmap: Bitmap): List<Color> {
     return colors
 }
 
-fun closestCenterIndex(color: Color, centers: List<Color>): Int {
-    return centers.indices.minBy { i ->
-        colorDistance(color, centers[i])
-    }
-}
-
-fun colorDistance(c1: Color, c2: Color): Float {
-    return sqrt(
-        (c1.red - c2.red).pow(2) +
-                (c1.green - c2.green).pow(2) +
-                (c1.blue - c2.blue).pow(2)
-    )
-}
-
 fun averageColor(bmp: Bitmap, x: Int, y: Int, w: Int, h: Int): Color {
     var r = 0L
     var g = 0L
@@ -394,19 +386,6 @@ enum class CubeColor(val display: Color) {
     GREEN(Color.Green)
 }
 
-fun closestCubeColor(color: Color): CubeColor {
-    fun dist(c1: Color, c2: Color): Float {
-        return sqrt(
-            (c1.red - c2.red).pow(2) +
-                    (c1.green - c2.green).pow(2) +
-                    (c1.blue - c2.blue).pow(2)
-        )
-    }
-
-    return CubeColor.values().minBy {
-        dist(color, it.display)
-    }
-}
 fun CubeColor.next(): CubeColor {
     val all = CubeColor.values()
     return all[(this.ordinal + 1) % all.size]
@@ -533,13 +512,6 @@ private fun sendFaceCommand(btHelper: BluetoothHelper, face: Int) {
 
 /* ===================== UTIL ===================== */
 
-fun ImageProxy.toBitmap(): Bitmap {
-    val buffer: ByteBuffer = planes[0].buffer
-    val bytes = ByteArray(buffer.remaining())
-    buffer.get(bytes)
-    return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-}
-
 fun buildCubeStateFromColors(faces: List<List<CubeColor>>): String {
     val kociembaOrder = listOf(5,0,3,4,1,2) // U,R,F,D,L,B
 
@@ -561,7 +533,7 @@ fun buildCubeStateFromColors(faces: List<List<CubeColor>>): String {
         1 to listOf(8,7,6,5,4,3,2,1,0), // L
         2 to listOf(6,3,0,7,4,1,8,5,2), // B
         3 to listOf(2,5,8,1,4,7,0,3,6), // F
-        4 to listOf(2,5,8,1,4,7,0,3,6), // D
+        4 to listOf(6,3,0,7,4,1,8,5,2), // D
         5 to listOf(2,5,8,1,4,7,0,3,6)  // U
     )
 
