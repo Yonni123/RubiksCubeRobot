@@ -34,6 +34,7 @@ int SequenceManager::startSequence(const char* moveString)
     if (moveString[0] == 'C' && moveString[1] == '\0')
     {
         busy = 0;
+        idleTimeMs = millis();
         activeSequence[0] = '\0';
         notifyState();
         return 0;
@@ -115,6 +116,7 @@ int SequenceManager::handleSequence()
         if (!parseServoType(activeSequence[sequenceIndex], servoType))
         {
             busy = 0;
+            idleTimeMs = millis();
             activeSequence[0] = '\0';
             notifyState();
             return -3;  // servo type error
@@ -125,6 +127,7 @@ int SequenceManager::handleSequence()
         if (!parseServoState(activeSequence[sequenceIndex], state))
         {
             busy = 0;
+            idleTimeMs = millis();
             activeSequence[0] = '\0';
             notifyState();
             return -4;  // state error
@@ -144,6 +147,7 @@ int SequenceManager::handleSequence()
             return 2; // This is an indicator for the MOVE handler
 
         busy = 0;
+        idleTimeMs = millis();
         activeSequence[0] = '\0';
         notifyState();
         return 0;
@@ -175,6 +179,7 @@ int SequenceManager::handleMoves()
     if (seqResult < 0)
     {
         busy = 0;   // Error in sequence
+        idleTimeMs = millis();
         activeSequence[0] = '\0';
         moveBuf[0] = '\0';
         notifyState();
@@ -190,6 +195,7 @@ int SequenceManager::handleMoves()
     if (moveChar == '\0')
     {
         busy = 0;   // All moves done
+        idleTimeMs = millis();
         activeSequence[0] = '\0';
         moveBuf[0] = '\0';
         moveIndex = 0;

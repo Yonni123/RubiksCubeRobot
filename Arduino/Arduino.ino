@@ -13,7 +13,9 @@ void setup() {
 }
 
 void loop() {
-    sendPWMAll();   // Drive the motors
+    // During calibration, seqManager is never busy
+    if (millis() - seqManager.idleTimeMs < 5000 || seqManager.isBusy() || CALIBRATE)
+        sendPWMAll();   // Drive the motors
 
 #if CALIBRATE
     calibrateLoop();
