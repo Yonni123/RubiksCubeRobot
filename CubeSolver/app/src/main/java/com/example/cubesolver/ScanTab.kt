@@ -1,5 +1,6 @@
 package com.example.cubesolver.tabs
 
+import android.R
 import android.graphics.Bitmap
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -474,33 +475,110 @@ fun CubeGridOverlay() {
 
 /* ===================== ROBOT ===================== */
 
+private fun rotateCube(newOrientation: String, movesDelayMs: Int): String {
+    val sb = StringBuilder()
+
+    // FRONT and BACK grab, RIGHT and LEFT release
+    sb.append("FLBLRRLR").append(movesDelayMs)
+
+    // Rotate depending on orientation
+    if (newOrientation == "NORMAL") {
+        // front spin right, back spin left
+        sb.append("fRfRbLbL").append(movesDelayMs)
+    } else {
+        // front spin left, back spin right
+        sb.append("fLfLbRbR").append(movesDelayMs)
+    }
+
+    // RIGHT and LEFT grab
+    sb.append("RLLL").append(movesDelayMs)
+
+    // FRONT and BACK release
+    sb.append("FRBR").append(movesDelayMs)
+
+    // front and back spin to true center
+    sb.append("fCfCbCbC").append(movesDelayMs)
+
+    // FRONT and BACK sliders go back
+    sb.append("FCBC").append(movesDelayMs)
+
+    // Relax RIGHT and LEFT sliders
+    sb.append("RCLC")
+
+    return sb.toString()
+}
+
 private fun sendFaceCommand(btHelper: BluetoothHelper, face: Int) {
-    var delay = 250
+    var delay = 200
     var cmd = "SEQ "
 
-    if (face == 1) {
-        cmd += "rrFLBLRRLR${delay}fLbRFCBClr0"  // Scan RIGHT side
+    if (face == 1) {    // Scan RIGHT side
+        cmd += "rrrr"   // Prepare RIGHT side to be scanned (totate it 45 deg)
+        cmd += "FLBL"   // Grab onto the cube from FRONT and BACK
+        cmd += "${delay}"   // Wait
+        cmd += "RRLR${delay}"   // Release RIGHT and LEFT side and wait
+        cmd += "fLbR"   // Flip the entire cube (This will make it slide out)
+        cmd += "FCBC"   // Relax the
+        cmd += "lrlr" // This arm is in the way of scanning, just move it :)
     } else if (face == 2) {
-        cmd += "rrlCFLBL${delay}RRLR${delay}fCfCbCbC${delay}FCBCFCBCRCLC${delay}rC"  // RECOVER
-        cmd += "lr${delay}FLBLRRLR${delay}fRbLFCBCrr0" // Scan LEFT side
+        cmd += "lCFLBLRRLR${delay}fCfCbCbC${delay}FCBCFCBCRCLC${delay}rC"  // RECOVER
+        cmd += "lrlr"
+        cmd += "FLBL"
+        cmd += "${delay}"
+        cmd += "RRLR${delay}"
+        cmd += "fRbL"
+        cmd += "FCBC"
+        cmd += "rrrr"
     } else if (face == 3) {
         cmd += "lrrCFLBLRRLR${delay}fCfCbCbC${delay}FCBCFCBCRCLC${delay}lC"  // RECOVER
-        cmd += "brRLLLBRFR${delay}rLlRRCLCfr0"  // Scan BACK side
+        cmd += "brbr"
+        cmd += "RLLL"
+        cmd += "${delay}"
+        cmd += "BRFR${delay}"
+        cmd += "rLlR"
+        cmd += "RCLC"
+        cmd += "frfr"
     } else if (face == 4) {
         cmd += "brfCRLLLBRFR${delay}rCrClClC${delay}RCLCRCLCBCFC${delay}bC"  // Recover
-        cmd += "frRLLLBRFR${delay}rRlLRCLCbr0" // Scan FRONT side
+        cmd += "frfr"
+        cmd += "RLLL"
+        cmd += "${delay}"
+        cmd += "BRFR${delay}"
+        cmd += "rRlL"
+        cmd += "RCLC"
+        cmd += "brbr"
     } else if (face == 5) {
-        cmd += "frbCfrbCRLLLBRFR${delay}rCrClClC${delay}RCLCRCLCBCFC${delay}fC"  // Recover
-        cmd += "${delay}FLBLRRLR${delay}fLfLbRbR${delay}RLLL${delay}FRBR${delay}fCbCfCbC${delay}FCBC${delay}RCLC" // Rotate cube
-        cmd += "rrFLBLRRLR${delay}fLbRFCBClr0" // Scan DOWN side
+        cmd += "frbCfrbCRLLLBRFR${delay}rCrClClC${delay}RCLCRCLCBCFC${delay}fC${delay}"  // Recover
+        //cmd += "${delay}FLBLRRLR${delay}fLfLbRbR${delay}RLLL${delay}FRBR${delay}fCbCfCbC${delay}FCBC${delay}RCLC" // Rotate cube
+        cmd += rotateCube("INVERT", delay)
+        cmd += "rrrr"
+        cmd += "FLBL"
+        cmd += "${delay}"
+        cmd += "RRLR${delay}"
+        cmd += "fLbR"
+        cmd += "FCBC"
+        cmd += "lrlr"
     } else if (face == 6) {
         cmd += "rrlCFLBLRRLR${delay}fCfCbCbC${delay}FCBCFCBCRCLC${delay}rC"  // Recover
-        cmd += "lrFLBLRRLR${delay}fRbLFCBCrr0" // Scan UP side
+        cmd += "lrlr"
+        cmd += "FLBL"
+        cmd += "${delay}"
+        cmd += "RRLR${delay}"
+        cmd += "fRbL"
+        cmd += "FCBC"
+        cmd += "rrrr"
     } else if (face == 7 || face == 8) { // Start or End of review phase
-        cmd += "lrrCFLBLRRLR${delay}fCfCbCbC${delay}FCBCFCBCRCLC${delay}lC"  // Recover from face 6
-        cmd += "${delay}FLBLRRLR${delay}fRfRbLbL${delay}RLLL${delay}FRBR${delay}fCbCfCbC${delay}FCBC${delay}RCLC" // Flip the cube back
+        cmd += "lrrCFLBLRRLR${delay}fCfCbCbC${delay}FCBCFCBCRCLC${delay}lC${delay}"  // Recover from face 6
+        //cmd += "${delay}FLBLRRLR${delay}fRfRbLbL${delay}RLLL${delay}FRBR${delay}fCbCfCbC${delay}FCBC${delay}RCLC" // Flip the cube back
+        cmd += rotateCube("NORMAL", delay)
         if (face == 7) {    // If start review, setup first face
-            cmd += "rrFLBLRRLR${delay}fLbRFCBClr0"  // Show face RIGHT for review
+            cmd += "rrrr"   // Prepare RIGHT side to be scanned (totate it 45 deg)
+            cmd += "FLBL"   // Grab onto the cube from FRONT and BACK
+            cmd += "${delay}"   // Wait
+            cmd += "RRLR${delay}"   // Release RIGHT and LEFT side and wait
+            cmd += "fLbR"   // Flip the entire cube (This will make it slide out)
+            cmd += "FCBC"   // Relax the
+            cmd += "lrlr" // This arm is in the way of scanning, just move it :)
         }
     }
     else {

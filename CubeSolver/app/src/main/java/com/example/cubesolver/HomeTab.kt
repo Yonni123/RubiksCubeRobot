@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cubesolver.RobotController
 import com.example.cubesolver.bluetooth.BluetoothHelper
 import org.kociemba.twophase.Search
 import kotlinx.coroutines.Dispatchers
@@ -47,11 +46,25 @@ class SolverViewModel : ViewModel() {
     }
 }
 
+var delay = 210  // delay between individual servo commands
+private const val MIN_DELAY = 120    // fastest (100%)
+private const val MAX_DELAY = 300   // slowest (10%)
+fun setSpeed(percent: Int) {
+    // Clamp input to 10–100
+    val p = percent.coerceIn(10, 100)
+
+    // Normalize to 0.0–1.0
+    val t = (p - 10) / 90.0f
+
+    // Interpolate delay (inverse relationship)
+    delay = (MAX_DELAY - t * (MAX_DELAY - MIN_DELAY)).toInt()
+}
+
+
 @Composable
 fun HomeTab(
     modifier: Modifier = Modifier,
     btHelper: BluetoothHelper,
-    robotController: RobotController,
     robotState: String,
     cubeState: String?,
     solverViewModel: SolverViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
@@ -62,6 +75,40 @@ fun HomeTab(
     val solverReady = solverViewModel.solverReady
 
     if (!solverReady) {
+        // --- Open / Close Buttons at bottom ---
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Button(
+                onClick = {
+                    // Send "OPEN" command to robot
+                    btHelper.send("SEQ RRLRFRBR") { e ->
+                        // Optional: handle error
+                        println("Failed to send OPEN: ${e.message}")
+                    }
+                },
+                enabled = robotState == "IDLE" && btHelper.isConnected,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Open")
+            }
+
+            Button(
+                onClick = {
+                    // Send "Close" command to robot
+                    btHelper.send("SEQ RCLCFCBC") { e ->
+                        // Optional: handle error
+                        println("Failed to send CLOSE: ${e.message}")
+                    }
+                },
+                enabled = robotState == "IDLE" && btHelper.isConnected,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Close")
+            }
+        }
+
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
@@ -103,7 +150,7 @@ fun HomeTab(
     }
 
     LaunchedEffect(solveSpeed) {
-        robotController.setSpeed((solveSpeed * 100).toInt())
+        setSpeed((solveSpeed * 100).toInt())
     }
 
     // Determine alpha and enable state based on Bluetooth connection
@@ -176,7 +223,8 @@ fun HomeTab(
                     Button(
                         onClick = {
                             solution?.let { sol ->
-                                robotController.executeMoves(btHelper, sol)
+                                val parsed = parseCubeNotation(sol)  // convert solution
+                                btHelper.send("MOVE $delay $parsed")        // send the parsed moves
                             }
                         },
                         //enabled = solution != null && enabled && !solution.toString().startsWith("Error"),
@@ -222,4 +270,25 @@ fun HomeTab(
             }
         }
     }
+}
+
+fun parseCubeNotation(solution: String): String {
+    val moves = StringBuilder()
+    val rawMoves = solution.split(" ")
+
+    for (move in rawMoves) {
+        if (move.isEmpty()) continue
+
+        val face = move[0]
+        val modifier = if (move.length > 1) move.substring(1) else ""
+
+        when (modifier) {
+            ""  -> moves.append(face)
+            "'" -> moves.append(face.lowercase())
+            "2" -> moves.append(face).append(face)
+            else -> println("Unknown modifier: $move")
+        }
+    }
+
+    return moves.toString()
 }

@@ -38,14 +38,13 @@ import com.example.cubesolver.bluetooth.BluetoothHelper
 class MainActivity : ComponentActivity() {
     // Shared Bluetooth helper for the whole app
     val bluetoothHelper by lazy { BluetoothHelper() }
-    val robotController by lazy { RobotController() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             CubeSolverTheme {
-                CubeSolverApp(bluetoothHelper, robotController)
+                CubeSolverApp(bluetoothHelper)
             }
         }
     }
@@ -53,7 +52,7 @@ class MainActivity : ComponentActivity() {
 
 @PreviewScreenSizes
 @Composable
-fun CubeSolverApp(btHelper: BluetoothHelper, robotController: RobotController) {
+fun CubeSolverApp(btHelper: BluetoothHelper) {
     var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
 
     // --- Shared app state ---
@@ -94,7 +93,6 @@ fun CubeSolverApp(btHelper: BluetoothHelper, robotController: RobotController) {
                         HomeTab(
                             modifier = Modifier,
                             btHelper = btHelper,
-                            robotController = robotController,
                             robotState = robotState,
                             cubeState = cubeState
                         )
