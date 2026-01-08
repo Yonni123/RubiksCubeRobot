@@ -220,28 +220,31 @@ void SequenceManager::rotateCube(CubeOrientation newOrientation)
     char *p = activeSequence;
 
     p += strlen(p);
-    sprintf(p, "FLBLRRLR%d", movesDelayMs);  // FRONT and BACK grab, RIGHT and LEFT release
+    sprintf(p, "RLLL");         // RIGHT and LEFT grab
 
     p += strlen(p);
-    if (newOrientation == ORIENT_NORMAL)
+    sprintf(p, "FRBR%d", movesDelayMs);         // FRONT and BACK release
+
+    p += strlen(p);
+    if (newOrientation == ORIENT_INVERT)
         sprintf(p, "fRbL%d", movesDelayMs);     // front spin right, back spin left, twice for true left and right
     else
         sprintf(p, "fLbR%d", movesDelayMs);     // front spin left, back spin right, twice for true left and right
 
     p += strlen(p);
-    sprintf(p, "RLLL%d", movesDelayMs);         // RIGHT and LEFT grab
+    sprintf(p, "FLBL%d", movesDelayMs);         // FRONT and BACK grab
 
     p += strlen(p);
-    sprintf(p, "FRBR%d", movesDelayMs);         // FRONT and BACK release
+    sprintf(p, "RRLR%d", movesDelayMs);         // RIGHT and LEFT release
    
     p += strlen(p);
     sprintf(p, "fCfCbCbC%d", movesDelayMs);    // front and back spin to true center
 
     p += strlen(p);
-    sprintf(p, "FCBC%d", movesDelayMs);         // FRONT and BACK sliders go back
+    sprintf(p, "RCLC%d", movesDelayMs);         // RIGHT and LEFT sliders go back
 
     p += strlen(p);
-    sprintf(p, "RCLC");         // Relax RIGHT and LEFT sliders, they don't need to grab anymore
+    sprintf(p, "FCBC");         // Relax RIGHT and LEFT sliders, they don't need to grab anymore
     
     orientation = newOrientation;
 }

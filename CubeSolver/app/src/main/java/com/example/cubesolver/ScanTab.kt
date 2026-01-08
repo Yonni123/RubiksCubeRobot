@@ -478,32 +478,35 @@ fun CubeGridOverlay() {
 private fun rotateCube(newOrientation: String, movesDelayMs: Int): String {
     val sb = StringBuilder()
 
-    // FRONT and BACK grab, RIGHT and LEFT release
-    sb.append("FLBLRRLR").append(movesDelayMs)
-
-    // Rotate depending on orientation
-    if (newOrientation == "NORMAL") {
-        // front spin right, back spin left
-        sb.append("fRfRbLbL").append(movesDelayMs)
-    } else {
-        // front spin left, back spin right
-        sb.append("fLfLbRbR").append(movesDelayMs)
-    }
-
     // RIGHT and LEFT grab
-    sb.append("RLLL").append(movesDelayMs)
+    sb.append("RLLL")
 
     // FRONT and BACK release
-    sb.append("FRBR").append(movesDelayMs)
+    sb.append("FRBR${movesDelayMs}")
+
+    // Rotate depending on orientation
+    if (newOrientation == "INVERT") {
+        // front spin right, back spin left
+        sb.append("fRbL${movesDelayMs}")
+    } else {
+        // front spin left, back spin right
+        sb.append("fLbR${movesDelayMs}")
+    }
+
+    // FRONT and BACK grab
+    sb.append("FLBL${movesDelayMs}")
+
+    // RIGHT and LEFT release
+    sb.append("RRLR${movesDelayMs}")
 
     // front and back spin to true center
-    sb.append("fCfCbCbC").append(movesDelayMs)
+    sb.append("fCfCbCbC${movesDelayMs}")
 
-    // FRONT and BACK sliders go back
-    sb.append("FCBC").append(movesDelayMs)
+    // RIGHT and LEFT sliders go back
+    sb.append("RCLC${movesDelayMs}")
 
-    // Relax RIGHT and LEFT sliders
-    sb.append("RCLC")
+    // Relax RIGHT and LEFT sliders, they don't need to grab anymore
+    sb.append("FCBC")
 
     return sb.toString()
 }
