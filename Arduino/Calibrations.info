@@ -2,11 +2,11 @@ These are MY calibrations, I just want a copy of them stored somewhere..
 
 Idx Pin Type     L(us) R(us) C(us) Dev(us)
 --- --- -------- ----- ----- ----- -------
-0   5   RIGHT_SPINNER 420  2380  1400  55
-1   4   RIGHT_SLIDER 2350  1150  2290  0
-2   19   LEFT_SPINNER 550  2465  1505  60
+0   5   RIGHT_SPINNER 495  2580  1570  70
+1   4   RIGHT_SLIDER 2350  1150  2440  0
+2   19   LEFT_SPINNER 480  2560  1500  70
 3   17   LEFT_SLIDER 2450  900  2275  0
-4   15   FRONT_SPINNER 535  2465  1510  60
-5   16   FRONT_SLIDER 450  2000  750  0
-6   2   BACK_SPINNER 465  2470  1450  60
+4   15   FRONT_SPINNER 420  2485  1415  60
+5   16   FRONT_SLIDER 450  2000  650  0
+6   2   BACK_SPINNER 405  2520  1490  55
 7   3   BACK_SLIDER 400  2000  725  0

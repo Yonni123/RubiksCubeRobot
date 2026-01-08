@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <string.h>
-#include "Servo.h"
+#include "MyServo.h"
 #include "SequenceManager.h"
 #include "Config.h"
 #include "API.h"

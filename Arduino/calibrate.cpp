@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <EEPROM.h>
-#include "Servo.h"
+#include "MyServo.h"
 #include "Calibrate.h"
 #include "Config.h"
 

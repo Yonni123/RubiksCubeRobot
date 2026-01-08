@@ -1,5 +1,5 @@
 #include "Calibrate.h"
-#include "Servo.h"
+#include "MyServo.h"
 #include "SequenceManager.h"
 #include "API.h"
 
@@ -15,8 +15,10 @@ void setup() {
 void loop() {
     // During calibration, seqManager is never busy
     if (millis() - seqManager.idleTimeMs < 5000 || seqManager.isBusy() || CALIBRATE)
-        sendPWMAll();   // Drive the motors
-
+        attachAllServos();
+    else
+        detachAllServos();
+        
 #if CALIBRATE
     calibrateLoop();
 #else

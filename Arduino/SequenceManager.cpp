@@ -1,5 +1,5 @@
 #include "SequenceManager.h"
-#include "Servo.h"
+#include "MyServo.h"
 #include <ctype.h> 
 #include <stdlib.h>
 #include <Arduino.h>
@@ -47,7 +47,7 @@ int SequenceManager::startSequence(const char* moveString)
     activeSequence[sizeof(activeSequence) - 1] = '\0';  // TODO: use strcpy?
 
     sequenceIndex = 0;
-    nextMoveAt = millis();
+    nextMoveAt = millis() + 100;    // Give time for the servo library to attach servos
     busy = 1;   // Busy with SEQ
     notifyState();
 
@@ -68,7 +68,7 @@ int SequenceManager::startMoves(const char* moveString, int delayMs)
     activeSequence[sizeof(moveBuf) - 1] = '\0'; // TODO: use strcpy?
 
     sequenceIndex = 0;
-    nextMoveAt = millis();
+    nextMoveAt = millis() + 100;    // Give time for the servo library to attach servos
     busy = 2;   // Busy with MOVE
     notifyState();
 
@@ -136,7 +136,6 @@ int SequenceManager::handleSequence()
 
         // Execute move immediately
         servos[servoType].setState(state);
-        servos[servoType].sendPulse();
     }
 
     // ---- End of sequence ----
@@ -225,9 +224,9 @@ void SequenceManager::rotateCube(CubeOrientation newOrientation)
 
     p += strlen(p);
     if (newOrientation == ORIENT_NORMAL)
-        sprintf(p, "fRfRbLbL%d", movesDelayMs);     // front spin right, back spin left, twice for true left and right
+        sprintf(p, "fRbL%d", movesDelayMs);     // front spin right, back spin left, twice for true left and right
     else
-        sprintf(p, "fLfLbRbR%d", movesDelayMs);     // front spin left, back spin right, twice for true left and right
+        sprintf(p, "fLbR%d", movesDelayMs);     // front spin left, back spin right, twice for true left and right
 
     p += strlen(p);
     sprintf(p, "RLLL%d", movesDelayMs);         // RIGHT and LEFT grab
