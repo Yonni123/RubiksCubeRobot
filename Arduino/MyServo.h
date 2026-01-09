@@ -21,6 +21,11 @@ private:
     int pulse{};    // Current pulse width in microseconds
     bool attached{false};
 
+    // Acceleration control
+    int targetPulse{};        // Desired pulse width
+    int velocity{};           // µs per update
+    unsigned long lastUpdate{};
+
 public:
 
     // Constructor
@@ -61,6 +66,8 @@ public:
     void attach();
 
     void detach();
+
+    void update();
 };
 
 #define NUM_SERVOS 8
@@ -70,3 +77,5 @@ extern MyServo servos[NUM_SERVOS];
 void attachAllServos();
 
 void detachAllServos();
+
+void updateAllServos();

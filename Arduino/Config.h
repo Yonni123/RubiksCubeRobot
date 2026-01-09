@@ -24,3 +24,10 @@
 // Size of the buffer to hold individual moves in MOVE command
 // God's number is 20, but just to be safe we allow a few extra moves
 #define MOVE_BUFFER_SIZE 32
+
+
+// Everything below is for the acceleration control of servos
+// Acceleration ramps are important to reduce mechanical stress on servos and improve reliability
+#define ACCELERATION 15          // µs per update²
+#define MAX_VELOCITY 60         // µs per update
+#define UPDATE_PERIOD_MS 5     // 100 Hz - servo update frequency

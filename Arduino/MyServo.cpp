@@ -17,6 +17,7 @@ MyServo::MyServo(int pin, ServoType type, ServoCal calibration) :
     } else {
         pulse = calibration.R_us;  // We want sliders in release by default
     }
+    targetPulse = pulse;
 }
 
 void MyServo::setState(ServoState next)
@@ -24,29 +25,29 @@ void MyServo::setState(ServoState next)
     switch (next)
     {
     case STATE_L:
-        pulse = cal.L_us; break;
+        targetPulse = cal.L_us; break;
     case STATE_R:
-        pulse = cal.R_us; break;
+        targetPulse = cal.R_us; break;
     case STATE_C:
         if (type % 2 == 1) // Slider
         {
-            pulse = cal.C_us;
+            targetPulse = cal.C_us;
             break;
         }  
         if (state == STATE_L || state == STATE_l)
-            pulse = cal.C_us + cal.CD_us;
+            targetPulse = cal.C_us + cal.CD_us;
         else if (state == STATE_R || state == STATE_r)
-            pulse = cal.C_us - cal.CD_us;
+            targetPulse = cal.C_us - cal.CD_us;
         else
-            pulse = cal.C_us;   // Double center is absolute center
+            targetPulse = cal.C_us;   // Double center is absolute center
         break;
     case STATE_r:
-        pulse = (cal.C_us + cal.R_us) / 2; break;
+        targetPulse = (cal.C_us + cal.R_us) / 2; break;
     case STATE_l:
-        pulse = (cal.C_us + cal.L_us) / 2; break;
+        targetPulse = (cal.C_us + cal.L_us) / 2; break;
     }
     state = next;
-    thisServo.writeMicroseconds(pulse);
+    //thisServo.writeMicroseconds(pulse);
 }
 
 void MyServo::attach()
@@ -66,6 +67,47 @@ void MyServo::detach()
         thisServo.detach();
         attached = false;
     }
+}
+
+void MyServo::update()
+{
+    if (!attached)
+        return;
+
+    unsigned long now = millis();
+    if (now - lastUpdate < UPDATE_PERIOD_MS)
+        return;
+    lastUpdate = now;
+
+    int error = targetPulse - pulse;
+
+    if (error == 0)
+    {
+        velocity = 0;
+        return;
+    }
+
+    // Determine desired direction
+    int dir = (error > 0) ? 1 : -1;
+
+    // Accelerate
+    velocity += dir * ACCELERATION;
+
+    // Clamp velocity
+    if (velocity >  MAX_VELOCITY) velocity =  MAX_VELOCITY;
+    if (velocity < -MAX_VELOCITY) velocity = -MAX_VELOCITY;
+
+    // Deceleration zone (classic trapezoidal profile)
+    int stoppingDistance = (velocity * velocity) / (2 * ACCELERATION);
+    if (abs(error) <= stoppingDistance)
+        velocity -= dir * ACCELERATION;
+
+    // Prevent overshoot
+    if (abs(velocity) > abs(error))
+        velocity = error;
+
+    pulse += velocity;
+    thisServo.writeMicroseconds(pulse);
 }
 
 MyServo servos[NUM_SERVOS] =
@@ -134,6 +176,14 @@ void detachAllServos()
     for (int i = 0; i < NUM_SERVOS; i++)
     {
         servos[i].detach();
+    }
+}
+
+void updateAllServos()
+{
+    for (int i = 0; i < NUM_SERVOS; i++)
+    {
+        servos[i].update();
     }
 }
 

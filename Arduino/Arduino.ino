@@ -18,6 +18,8 @@ void loop() {
         attachAllServos();
     else
         detachAllServos();
+
+    updateAllServos();  // Acceleration control over time
         
 #if CALIBRATE
     calibrateLoop();
