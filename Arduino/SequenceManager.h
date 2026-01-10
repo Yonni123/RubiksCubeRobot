@@ -57,6 +57,8 @@ public:
 
     unsigned long idleTimeMs;  // Time since last sequence completed
 
+    CubeOrientation orientation = ORIENT_NORMAL;    // To keep track of which side is up
+
 private:
     int busy = 0;   // 0 = idle, 1 = busy with SEQ, 2 = busy with MOVE
     void notifyState();
@@ -71,7 +73,6 @@ private:
     int movesDelayMs;   // This is for MOVE command only
     char seqBuf[128]; // Used by MOVE command only to build individual moves
     int moveIndex = 0;
-    CubeOrientation orientation = ORIENT_NORMAL;    // To keep track of which side is up
     int handleMoves();
     void populateActiveSequenceMove(char moveChar);
     void rotateCube(CubeOrientation newOrientation);

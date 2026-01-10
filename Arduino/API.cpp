@@ -100,7 +100,7 @@ void APILoop()
     // --- MOVE ---
     if (strcmp(cmd, "MOVE") == 0)
     {
-        if (tokenCount != 3)
+        if (tokenCount != 4)
         {
             Serial.println("ERR args");
             return;
@@ -113,7 +113,18 @@ void APILoop()
             return;
         }
 
-        int res = seqManager.startMoves(tokens[2], delay);
+        int inputOrientation = atoi(tokens[2]);
+        if (inputOrientation == 0)
+            seqManager.orientation = ORIENT_NORMAL;
+        else if (inputOrientation == 1)
+            seqManager.orientation = ORIENT_INVERT;
+        else
+        {
+            Serial.println("ERR orientation");
+            return;
+        }
+
+        int res = seqManager.startMoves(tokens[3], delay);
         if (res == 0) Serial.println("OK");
         else if (res == -1) Serial.println("ERR busy");
         else if (res == -2) Serial.println("ERR format");

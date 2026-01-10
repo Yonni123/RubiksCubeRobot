@@ -156,16 +156,26 @@ void MyServo::adjustCalibration(int delta)
         cal.R_us += delta;
     }
     pulse += delta;
+    thisServo.writeMicroseconds(pulse);
 }
 
 void MyServo::adjustDeviation(int delta)
 {
     if (type % 2 == 0) // Spinner
     {
-        cal.CD_us += delta;
-        if (state == STATE_C)
+        // Check if CD was subtracted or added previously
+        if (pulse < cal.C_us)
         {
-            pulse = cal.C_us + ((state == STATE_L) ? cal.CD_us : -cal.CD_us);
+            cal.CD_us -= delta;
+            if (cal.CD_us < 0)
+                cal.CD_us = 0;
+            pulse = cal.C_us - cal.CD_us;
         }
+        else if (pulse > cal.C_us)
+        {
+            cal.CD_us += delta;
+            pulse = cal.C_us + cal.CD_us;
+        }
+        thisServo.writeMicroseconds(pulse);
     }
 }

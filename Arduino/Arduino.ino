@@ -13,8 +13,8 @@ void setup() {
 }
 
 void loop() {
-    // During calibration, seqManager is never busy
-    if (millis() - seqManager.idleTimeMs < 5000 || seqManager.isBusy() || CALIBRATE)
+    // During calibration, seqManager is never busy  
+    if (millis() - seqManager.idleTimeMs < 3000 || seqManager.isBusy() || CALIBRATE)
         attachAllServos();
     else
         detachAllServos();

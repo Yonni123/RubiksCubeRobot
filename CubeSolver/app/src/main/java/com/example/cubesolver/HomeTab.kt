@@ -224,10 +224,11 @@ fun HomeTab(
                         onClick = {
                             solution?.let { sol ->
                                 val parsed = parseCubeNotation(sol)  // convert solution
-                                btHelper.send("MOVE $delay $parsed")        // send the parsed moves
+                                btHelper.send("MOVE $delay 0 $parsed")        // send the parsed moves
                             }
+                            robotState == "BUSY"
                         },
-                        //enabled = solution != null && enabled && !solution.toString().startsWith("Error"),
+                        enabled = solution != null && enabled && !solution.toString().startsWith("Error") && robotState == "IDLE",
                         modifier = Modifier.align(Alignment.End)
                     ) {
                         Text("Solve")
@@ -247,6 +248,7 @@ fun HomeTab(
                             // Optional: handle error
                             println("Failed to send OPEN: ${e.message}")
                         }
+                        robotState == "BUSY"
                     },
                     enabled = robotState == "IDLE" && btHelper.isConnected,
                     modifier = Modifier.weight(1f)
@@ -261,6 +263,7 @@ fun HomeTab(
                             // Optional: handle error
                             println("Failed to send CLOSE: ${e.message}")
                         }
+                        robotState == "BUSY"
                     },
                     enabled = robotState == "IDLE" && btHelper.isConnected,
                     modifier = Modifier.weight(1f)
