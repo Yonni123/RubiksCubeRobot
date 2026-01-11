@@ -22,5 +22,7 @@
 #define SEQUENCE_BUFFER_SIZE 256
 
 // Size of the buffer to hold individual moves in MOVE command
-// God's number is 20, but just to be safe we allow a few extra moves
-#define MOVE_BUFFER_SIZE 32
+// God's number is 20, but make it more to be safe.
+// (Realistically, we will almost never find a perfect 20-move solution, unless its an easy scramble)
+// But, based on real testing, 32 moves were exceeded, so make it larger.
+#define MOVE_BUFFER_SIZE 64
