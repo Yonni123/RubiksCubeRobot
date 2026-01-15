@@ -5,7 +5,7 @@ An autonomous robotic system that can visually scan a scrambled Rubik's cube, co
 ## Project Overview
 
 This project combines:
-- **Hardware**: Arduino-controlled robotic arm with 8 servo motors
+- **Hardware**: Arduino-controlled robotic actuators with 8 servo motors
 - **Software**: Android mobile app for camera-based cube detection and Bluetooth control
 - **Algorithms**: Kociemba two-phase algorithm for optimal cube solving
 
@@ -20,7 +20,7 @@ This is where you'll find hardware things that you will need, along with STL fil
 When you've built the robot, it is time to flash the arduino with the firmware and configure it. This directory has a README that will show how this is done, and explain the API interface of the robot and how to talk with it.
 
 ### Cube Solver
-Since the entire robot with the arduino is just sitting and waiting for commands, this Cube Solver is an android app that I developed as an example for how to control the robot. It combines computer vision with the phone's camera to scan the cube with Kociemba's algorithm to find the optimal solution for the cube, and streams the solution to the robot, which executes it. 
+Since the entire robot with the arduino is just sitting and waiting for commands, this Cube Solver is an android app that I developed as an example for how to control the robot. It combines computer vision with the phone's camera to scan the cube with Kociemba's algorithm to find the optimal solution for the cube, and streams the solution to the robot, which executes it. The README there shows how to install the app on an android phone and use it, but not much about the code itself, if you wanna improve it, be my guest :)
 
 
 ## Workflow: Solving a Cube
@@ -47,9 +47,11 @@ Since the entire robot with the arduino is just sitting and waiting for commands
 
 - Make the scanning computer vision part better
 - The SEQ command and the API in general takes up the entire RAM cuz I was lazy
+- Actually implement the control tab
+- When pressing Solve, Open or Close buttons, disable them immediately and wait for robot to respond (just like we do with scan buttons)
 
 ---
 
 **Created**: January 2026  
-**Author**: Yonan  
+**Author**: Yonan Yonan
 **License**: Do whatever the fuck you want as long as you don't sell any of this or profit from it in any way
