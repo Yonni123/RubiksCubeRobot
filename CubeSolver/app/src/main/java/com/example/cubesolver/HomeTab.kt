@@ -1,6 +1,8 @@
 package com.example.cubesolver.tabs
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -160,7 +162,9 @@ fun HomeTab(
     Box(modifier = modifier.fillMaxSize().padding(16.dp)) {
         Column(
             verticalArrangement = Arrangement.spacedBy(24.dp),
-            modifier = Modifier.alpha(alpha) // dims all content
+            modifier = Modifier
+                .alpha(alpha)
+                .verticalScroll(rememberScrollState())
         ) {
 
             // --- Robot State Card ---
