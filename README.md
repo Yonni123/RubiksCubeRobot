@@ -53,5 +53,5 @@ Since the entire robot with the arduino is just sitting and waiting for commands
 ---
 
 **Created**: January 2026  
-**Author**: Yonan Yonan
+**Author**: Yonan Yonan  
 **License**: Do whatever the fuck you want as long as you don't sell any of this or profit from it in any way

@@ -26,6 +26,12 @@ Let's look at how the final robot should look like:
 
 ![](../README_resources/structure.png)
 
+To see a 3D version of that image, with clear parts, access this link: https://a360.co/49qhMGL
+
+The password is: Cubiton
+
+I do strongly suggest looking at it and using it as a manual for assembling the parts.
+
 We can see four actuators. Two of them are normal and two of them are mirrored. (the definition of mirrored and normal is just my own). The upper-right in the image above and the bottom left actuators is what I defined as normal. The other two is what I defined as mirrored. Depending on where you want the gear and the servo to end up, you might want either all mirrored, all normal or like I did, two mirrored and two normal. If you want 3 mirroed or 3 normals you aren't normal :)
 
 ### Actuators
@@ -48,7 +54,7 @@ I have designed two types of grabbers, you can choose any one you like. One of t
 
 #### Gear
 The gear has small cutout too, I don't recommend having a snap-on without anything holding it in place as this will move the entire slider back and fourth. What I did is have the servo arm with two little umm.. things? at the side.. I just snap off the long arms and only use the short arms because the gear is smaller. I hope this image will make it make sense :D
-![](../README_resources/gear.png)
+![](../README_resources/Gear.png)
 
 #### 3D printing
 Before 3D printing anything, keep in mind that all the hole sizes and dimensions and cutouts fit my servos and my setup. Make sure:
