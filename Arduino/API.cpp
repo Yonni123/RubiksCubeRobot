@@ -76,6 +76,7 @@ void APILoop()
         Serial.println("PING");
         Serial.println("STATUS [servo]");
         Serial.println("SEQ <string>|C");
+        Serial.println("MOVE <delay_ms> <orientation> <moves>");
         return;
     }
 

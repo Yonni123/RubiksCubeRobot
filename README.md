@@ -1,4 +1,8 @@
 # Rubik's Cube Robot
+<p align="center">
+  <img src="README_resources/Cubiton.png" alt="Pi-hole website" width="270" height="270">
+  <br>
+</p>
 
 An autonomous robotic system that can visually scan a scrambled Rubik's cube, compute the optimal solution, and solve it through precise servo-controlled manipulation.
 
