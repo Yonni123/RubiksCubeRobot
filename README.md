@@ -6,6 +6,13 @@
 
 An autonomous robotic system that can visually scan a scrambled Rubik's cube, compute the optimal solution, and solve it through precise servo-controlled manipulation.
 
+## Video demo
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=RQn-u8popRQ">
+    <img src="README_resources/Thumbnail3.png" width="500" alt="Project Demo Video"/>
+  </a>
+</p>
+
 ## Project Overview
 
 This project combines:
@@ -47,6 +54,9 @@ Since the entire robot with the arduino is just sitting and waiting for commands
    - Phone listens for IDLE/BUSY status updates
 5. **Done**: Cube is solved, robot returns to rest position
 
+## Known issues
+The layout of the android application is different from device to device. Depending on resolution, it might be perfect or completely ruined and almost unusable.
+
 ## Future Improvements
 
 - Make the scanning computer vision part better
@@ -58,4 +68,4 @@ Since the entire robot with the arduino is just sitting and waiting for commands
 
 **Created**: January 2026  
 **Author**: Yonan Yonan  
-**License**: Do whatever the fuck you want as long as you don't sell any of this or profit from it in any way
+**License**: Do whatever the fuck you want license, as long as you don't sell any of this or profit from it in any way
